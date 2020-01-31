@@ -126,6 +126,17 @@ class SearchView extends (GestureEventListeners(PolymerElement)) {
             margin-top: 10px;
          }
         }
+
+@media (min-width: 767px) {
+         
+          paper-button {
+            padding-top:35px;
+padding-bottom:35px;
+padding-left:20px;
+padding-right:20px; 
+          }
+
+}
       </style>
       <div class="layout horizontal">
          <div class="empty-div"></div>
@@ -210,6 +221,7 @@ class SearchView extends (GestureEventListeners(PolymerElement)) {
 
     let noDelay = true;
     this._search(noDelay);
+   
   }
 
   _onSearchIconTap(){

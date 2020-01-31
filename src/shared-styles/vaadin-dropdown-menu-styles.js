@@ -15,6 +15,7 @@ const $_documentContainer = document.createElement('template');
 $_documentContainer.innerHTML = `<dom-module id="vaadin-dropdown-menu-styles" theme-for="vaadin-dropdown-menu">
   <template>    
   <style>
+*{ -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; margin:0;padding:0;}
   :host {
     width: 100%;
   }

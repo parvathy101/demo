@@ -10,12 +10,14 @@
 
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import '../shared-styles/shared-styles.js';
-import '../smart/smart-client.js';
+import '../smart/php-client.js';
 
 class TeleHealthcareFlowGetSubscriberDetails extends PolymerElement {
   static get template() {
     return html`
-      <smart-client id="client" flow="TeleHealthcareFlow" flow-event="{{_postEvent}}" on-smart-network-error="_handleError" on-smart-error="_handleError" on-smart-response="_handleResponse" ></smart-client>
+    
+
+  <php-client id="client" flow="smart" flow-event="{{_postEvent}}" on-smart-network-error="_handleError" on-smart-error="_handleError" on-smart-response="_handleResponse" ></php-client>
     `;
   }
 
@@ -43,18 +45,32 @@ class TeleHealthcareFlowGetSubscriberDetails extends PolymerElement {
   }
 
   _handleResponse(e) {
+      
     var response = e.detail.responses[0];
+    
+if(response!=undefined)
+     {
     this.dispatchEvent(new CustomEvent("subscriber-details", { detail: { 'data': response }}));
+}
+else if(response==undefined)
+     {
+    var response2=e.detail.responses.responses[0].session;
+    if(response2!=undefined)
+     {
+     
+   this.dispatchEvent(new CustomEvent("session-expired", { detail: { 'session': response2}}));
+     }
+    console.log(response2);
+}
   }
 
   getDetails(email) {
       this.$.client._dataChanged();
-      this._postEvent = "GetSubscriberDetails";
+      this._postEvent = "getSubscriberDetails.php";
       var postData = {};
-      var postTo = {};
-      postTo['Subscriber'] = email;
+     postData.subscriber = email;
 
-      this.$.client.postSmart(postTo, postData);
+      this.$.client.postSmart(postData);
   }
 }
 

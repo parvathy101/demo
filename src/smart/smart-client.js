@@ -37,7 +37,7 @@ class SmartClient extends PolymerElement {
         },
         server: {
           type: String,
-          value: '192.168.1.36'
+          value: '178.128.165.237'
         },
         port: {
           type: Number,
@@ -92,6 +92,7 @@ class SmartClient extends PolymerElement {
 
   _computeParams(pto, data) {
       var post = data;
+   
       for (var key in pto) {
           if( pto.hasOwnProperty(key) ) {
               post[key] = {};
@@ -133,7 +134,7 @@ class SmartClient extends PolymerElement {
   }
 
   _handleResponse(data) {
-      console.log(data.detail.response);
+      console.log(data.detail.response[RESPONSES]);
       var errors = data.detail.response[ERROR];
       if (errors != undefined) {
           this._fireError(errors);

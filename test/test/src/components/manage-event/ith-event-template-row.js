@@ -1,0 +1,124 @@
+import { PolymerElement, html } from '@polymer/polymer/polymer-element';
+import  '@polymer/iron-flex-layout/iron-flex-layout-classes'
+import  '@polymer/iron-icon/iron-icon';
+import  '@polymer/paper-button/paper-button';
+import '../../shared-styles/paper-button-styles';
+
+class IthEventTemplateRow extends PolymerElement {
+  static get template() {
+    return html`
+      <style include="iron-flex paper-button-styles iron-flex-factors iron-flex-alignment">
+        :host {
+          display: block;
+        }
+        .cell-margin {
+          margin-right: 2px;
+        }
+        .row {
+          margin-bottom: 2px;
+          min-height: 100px;
+          flex-wrap: wrap;
+          background: var(--very-pale-blue-grey);
+        }
+        .cell-content {
+          padding: 19px 20px 19px 20px;
+          border-right: 2px solid var(--light-theme-background-color);
+        }
+        paper-button.btn{
+          min-width: 110px;
+        }
+        .title-content {
+          font-size: 16px;
+          font-family: 'Roboto-Bold';
+          color: var(--app-text-color);
+        }
+        .description-content {
+          font-size: 14px;
+          font-family: 'Roboto-Regular';
+          color: var(--app-text-color);
+          border-right: 2px solid var(--light-theme-background-color);
+          padding: 19px 52px 19px 20px;
+        }
+        div.row:nth-of-type(odd){
+          background: var(--table-background-color);
+        }
+        iron-icon.sensor-icon {
+          --iron-icon-fill-color: var(--app-accent-color);
+        }
+        @media (max-width: 767px) {
+         .sensor-container{
+           display: none !important;
+         }
+         .cell-content {
+          padding: 0px;
+          min-width: 100%;
+          border-right: 0px;
+          box-sizing: border-box;
+         }
+         .cell-margin {
+          margin-right: 0px;
+         }
+         .row{
+           margin-bottom: 8px;
+           padding: 17px;
+         }
+         .description-content { 
+           padding: 16px 0px;
+           border-right: none;
+         }
+        }
+      </style>
+      <div class="layout horizontal row">
+        <div class="cell-content cell-margin title-content flex-1 ">[[template.title]]</div>
+        <div class="cell-margin  description-content  flex-2">[[template.description]]</div>
+        <div class="cell-margin cell-content flex-1 sensor-container">
+
+          <template is="dom-repeat" items="[[template.sensors]]" as="sensor">
+              <iron-icon icon="[[_getSensorIcon(sensor.id)]]" title="[[sensor.name]]" class="sensor-icon"></iron-icon>
+          </template>
+
+        </div>
+        <div class="cell-content  center-justified flex-1" hidden="[[selected]]">
+          <paper-button id="addEventBtn" class="filledBlue btn" on-tap="_dispatchAddSelection">+ ADD</paper-button>
+        </div>
+        <div class="cell-content  center-justified flex-1" hidden$="[[!selected]]">
+          <paper-button class="borderBlue btn" on-tap="_dispatchRemoveSelection">- REMOVE</paper-button>
+        </div>
+      </div>        
+    `;
+  }
+
+  static get properties() {
+    return {
+      template: Object,
+      selected: {
+        type: Boolean,
+        value: false
+      }
+    }
+  }
+
+  _dispatchAddSelection() {
+    this.dispatchEvent(new CustomEvent('add-selection', {detail: {id: this.template.id}}));
+  }
+
+
+  _dispatchRemoveSelection() {
+    this.dispatchEvent(new CustomEvent('remove-selection', {detail: {id: this.template.id}}));
+  }
+  
+  _getSensorIcon(sensorId){
+    if(sensorId && sensorId.toLocaleLowerCase() === 'bed sensor'){
+      return 'ithings-sensor-icons:Temperature';
+    }
+    
+    if(sensorId && sensorId.toLocaleLowerCase() === 'motion sensor'){
+      return 'ithings-sensor-icons:Motion';
+    }
+    
+    return 'ithings-sensor-icons:Pressure-Sensor';
+    
+  }
+}
+
+window.customElements.define('ith-event-template-row', IthEventTemplateRow);

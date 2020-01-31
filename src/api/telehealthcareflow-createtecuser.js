@@ -10,12 +10,12 @@
 
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import '../shared-styles/shared-styles.js';
-import '../smart/smart-client.js';
+import '../smart/php-client.js';
 
 class TeleHealthcareFlowCreateTECUser extends PolymerElement {
   static get template() {
     return html`
-      <smart-client id="client" flow="TeleHealthcareFlow" flow-event="{{_postEvent}}" on-smart-network-error="_handleError" on-smart-error="_handleError" on-smart-response="_handleResponse" ></smart-client>
+      <php-client id="client" flow="smart" flow-event="{{_postEvent}}" on-smart-network-error="_handleError" on-smart-error="_handleError" on-smart-response="_handleResponse" ></php-client>
     `;
   }
 
@@ -41,25 +41,47 @@ class TeleHealthcareFlowCreateTECUser extends PolymerElement {
       }
     this.dispatchEvent(new CustomEvent("createuser-error", { detail: { 'error': response}}));
   }
+  
+   
 
   _handleResponse(e) {
-    var response = e.detail.responses[0];
-    this.dispatchEvent(new CustomEvent("created-user", { detail: { 'message': response }}));
+    var response = e.detail.responses.responses[0].message;
+    var response1=e.detail.responses.responses[0].error;
+    var response2=e.detail.responses.responses[0].session;
+
+    if(response2!=undefined)
+     {
+     
+   this.dispatchEvent(new CustomEvent("session-expired", { detail: { 'session': response2}}));
+     }
+    
+     if(response!=undefined)
+     {
+     console.log(response);
+  this.dispatchEvent(new CustomEvent("created-user", { detail: { 'message': response }}));
+     }
+    if(response1!=undefined)
+     {
+      console.log(response1);
+      this.dispatchEvent(new CustomEvent("createuser-error", { detail: { 'error': response1}}));
+     }
+
+
+
+
   }
 
   createtecuser(sp, email, name, phone, role) {
       this.$.client._dataChanged();
-      this._postEvent = "CreateTECUser";
+      this._postEvent = "createtecuser.php";
       var postData = {};
       postData.email = email;
       postData.name = name;
       postData.phone = phone;
       postData.role = role;
 
-      var postTo = {};
-      postTo['ServiceProvider'] = sp;
 
-      this.$.client.postSmart(postTo, postData);
+      this.$.client.postSmart(postData);
   }
 }
 

@@ -40,7 +40,10 @@ class SearchItem extends PolymerElement {
           font-family: 'Roboto-Regular';
           color: var(--app-text-color);
           border-right: 2px solid var(--light-theme-background-color);
+text-align:center;
           padding: 19px 52px 19px 20px;
+overflow: hidden; width: 280px;valign: top; whitespace: nowrap;
+
         }
         iron-icon.sensor-icon {
           --iron-icon-fill-color: var(--app-accent-color);
@@ -73,10 +76,21 @@ class SearchItem extends PolymerElement {
            border-right: none;
          }
         }
+
+
+@media (min-width: 767px) {
+        
+         .tablestyle{
+           word-wrap: break-word;
+         }
+         
+        }
+
+
       </style>
-      <div class="layout horizontal row">
+      <div class="layout horizontal row" style="text-align:center">
         <template is="dom-repeat" items="[[columns]]" as="column">
-            <div class="description-content cell-margin title-content flex-1">[[_getValue(column.label)]]</div>
+            <div class="description-content title-content flex-2 tablestyle">[[_getValue(column.label)]]</div>
         </template>
         
         <div class="cell-content  center-justified flex-1">

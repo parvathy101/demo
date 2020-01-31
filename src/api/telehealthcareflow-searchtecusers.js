@@ -10,12 +10,12 @@
 
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import '../shared-styles/shared-styles.js';
-import '../smart/smart-client.js';
+import '../smart/php-client.js';
 
 class TeleHealthcareFlowSearchTECUsers extends PolymerElement {
   static get template() {
     return html`
-      <smart-client id="client" flow="TeleHealthcareFlow" flow-event="{{_postEvent}}" on-smart-network-error="_handleError" on-smart-error="_handleError" on-smart-response="_handleResponse" ></smart-client>
+    <php-client id="client" flow="smart" flow-event="{{_postEvent}}" on-smart-network-error="_handleError" on-smart-error="_handleError" on-smart-response="_handleResponse" ></php-client>
     `;
   }
 
@@ -43,19 +43,31 @@ class TeleHealthcareFlowSearchTECUsers extends PolymerElement {
   }
 
   _handleResponse(e) {
-    var response = e.detail.responses[0];
+  // console.log(  e.detail.responses.users[0]);
+    var response = e.detail.responses.users;
+   
+   
+if(response!=undefined)
+     {
     this.dispatchEvent(new CustomEvent("tec-users", { detail: { 'users': response }}));
+    }
+    
+  else if(response==undefined)
+     {
+      var response2=e.detail.responses.responses[0].session;
+if(response2!=undefined)
+     {
+   this.dispatchEvent(new CustomEvent("session-expired", { detail: { 'session': response2}}));
+     }
+}
   }
 
   search(qsearch) {
-      this.$.client._dataChanged();
-      this._postEvent = "SearchTECUsers";
+     this._postEvent = "gettecuser.php";
       var postData = {};
-      postData.search = qsearch;
-      var postTo = {};
-      postTo['FlowAdmin'] = "TeleHealthcareFlow";
-
-      this.$.client.postSmart(postTo, postData);
+      postData.searchval = qsearch;
+   
+      this.$.client.postSmart(postData);
   }
 }
 

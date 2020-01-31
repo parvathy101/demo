@@ -14,6 +14,7 @@ const $_documentContainer = document.createElement('template');
 $_documentContainer.innerHTML = `<dom-module id="shared-styles-parent">
   <template>
     <style>
+//   *{ -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; margin:0;padding:0;}
       .card {
         margin: 24px;
         padding: 16px;

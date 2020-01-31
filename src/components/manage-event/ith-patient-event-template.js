@@ -12,8 +12,10 @@ import { PolymerElement, html } from '@polymer/polymer/polymer-element';
 import '@polymer/iron-flex-layout/iron-flex-layout-classes';
 import '@polymer/paper-styles/default-theme';
 import './ith-patient-event-settings.js';
+import './ith-edit-template-view.js';
 import './ith-patient-parameter-settings.js';
 import './ith-event-template-header.js';
+import '@polymer/paper-button/paper-button';
 //import {editPatientEventTemplateEvents} from '../../actions/patient-event-teplates.js';
 
 class IthPatientEventTemplate extends (PolymerElement) {
@@ -25,6 +27,10 @@ class IthPatientEventTemplate extends (PolymerElement) {
           background-color: var(--light-theme-background-color);
           box-shadow:  0px 3px 0px rgba(47, 48, 66, 0.15);
         }
+        #cont1
+          {
+        display:none;
+          }
         .events-container {
           padding: 0px 32px 24px 32px;
         }
@@ -40,23 +46,28 @@ class IthPatientEventTemplate extends (PolymerElement) {
       <div class="layout vertical">
         <ith-event-template-header 
           title="[[eventTemplate.name]]" 
+          category="[[eventTemplate.category]]"
           hide-patient-event-template= "[[_hidePatientEventTemplate]]"
           id="[[eventTemplate.name]]" 
-          on-edit-template="editTemplate">
+          on-delete-template="deleteTemplate"
+          on-edit-template="editTemplate" on-tap="_showcont">
         </ith-event-template-header>
 
-        <div class="events-container">
+        <div class="events-container" id="cont1">
           <iron-form id="form">
             <form>
               <template is="dom-repeat" items="[[eventTemplate.details]]">
-                <ith-patient-event-settings 
+                <ith-patient-event-settings
+                  id="set" 
                   name="events"
                   action="[[eventTemplate.action]]"
                   workflow-templates="[[_workflowTemplates]]" 
                   forward-to-system="[[_forwardToSystem]]" 
                   event="[[item]]"
                   recipents="[[_recipents]]"
-                  sensors="[[_sensors]]">
+                  sensors="[[_sensors]]"
+                  category="[[eventTemplate.category]]"
+                   on-patient-edit-templates="_values">
                 </ith-patient-event-settings>
               </template>
               
@@ -74,6 +85,9 @@ class IthPatientEventTemplate extends (PolymerElement) {
           </iron-form>
         </div>
       </div>
+        
+      <!--  <ith-edit-template-view id="lload" on-hide-createtemplate="_showListView" email="[[email]]"></ith-edit-template-view> -->
+      
     `;
   }
 
@@ -128,20 +142,45 @@ class IthPatientEventTemplate extends (PolymerElement) {
           return  ['system1']
         }
       },
-
-      _recipents: {
+      
+       start: {
+        type: String
+      },
+      end: {
+        type: String
+      },
+     tag: {
+        type: String
+      },
+       sequence: {
+        type: String
+      },
+     _recipents: {
         type: Array,
         value: function(){
           return [{'id': 'contanct1','name':'apexa kheni'}, {'id': 'contact2', 'name': 'ruchita kheni'},
           {'id': 'contact3', 'name': 'nirmal baladaniya'}]
         }
+      },
+     list: {
+          type: Array,
+          value: []
+      },
+      _view: {
+        type: String,
+        reflectToAttribute: true,
+        value: "LIST"
       }
     };
   }
 
-  editTemplate(){
+    _isVisible(a, b){
+    
+    return a === b;
+     }
+  EditTemplate(e){
     var serializeData = this.$.form.serializeForm();
-    console.log(serializeData);
+   alert(serializeData.events.event+"ratrt");
     store.dispatch(editPatientEventTemplateEvents(serializeData));
   }
 
@@ -176,6 +215,56 @@ class IthPatientEventTemplate extends (PolymerElement) {
     //  this._recipentsInfo = state.patientEventTemplates.recipentsInfo;
     //  this._sensors = state.patientEventTemplates.sensors;
   }
+
+   deleteTemplate(e)
+    {
+       console.log(this.eventTemplate.name+"kkkkk");
+       this.dispatchEvent(new CustomEvent('delete-templates', { detail: { 'eventname': this.eventTemplate.name }}));
+    }
+
+   editTemplate(e)
+    {
+       console.log(this.eventTemplate.name+"kkkkk");
+     
+    this.shadowRoot.querySelector('#set')._changeTime();
+     //  this.dispatchEvent(new CustomEvent('edit-templates', { detail: { 'eventname': this.eventTemplate.name,'start':this.start,'end':this.end,'tag':this.tag,'sequence':this.sequence }}));
+      // this._view = "EDIT_TEMPLATE";
+      this.dispatchEvent(new CustomEvent('edit-templates', { detail: { 'title':"EDIT_TEMPLATE", 'eventname': this.eventTemplate.name, 'description': this.eventTemplate.description, 'type': this.eventTemplate.category,'eventDetails': this.eventTemplate.details,'start':this.start,'end':this.end}}));
+     
+    }
+
+   _values(e)
+    {
+      
+      var evt={};
+      var evts=[];
+   
+ 
+     //alert(this.list);
+   this.start=e.detail.start;
+    this.end=e.detail.end;
+  //  this.tag=e.detail.tag;
+  //  this.sequence=e.detail.sequence;
+   
+     // this.list=evts;
+     
+    }
+   
+   _ac()
+    {
+     alert(this.list);
+    }
+
+_showcont()
+{
+//this.$.cont1.style.display = "block";
+var x = this.$.cont1;
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
 }
 
 window.customElements.define('ith-patient-event-template', IthPatientEventTemplate);

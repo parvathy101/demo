@@ -7,6 +7,9 @@ import '../../shared-styles/shared-styles';
 import '../../shared-styles/input-styles';
 import {mixinBehaviors} from '@polymer/polymer/lib/legacy/class.js';
 import {IronFormElementBehavior} from '@polymer/iron-form-element-behavior/iron-form-element-behavior';
+import '@polymer/paper-radio-button/paper-radio-button.js';
+import '@polymer/paper-radio-group/paper-radio-group.js';
+import '@polymer/paper-checkbox/paper-checkbox.js';
 
 class IthPatientEventSettings extends mixinBehaviors([IronFormElementBehavior], PolymerElement) {
   static get template() {
@@ -36,10 +39,15 @@ class IthPatientEventSettings extends mixinBehaviors([IronFormElementBehavior], 
        .recipient-container {
          flex-direction: column;
        }
-       @media (max-width: 1024px) {
+       @media (max-width: 1200px) {
         .list-container,
         .time-period-container  {
           flex-wrap: wrap;
+        }
+.sensor  {
+          
+min-width: 100%;
+           box-sizing: border-box;
         }
         .list-container {
           margin-bottom: 20px;
@@ -51,11 +59,14 @@ class IthPatientEventSettings extends mixinBehaviors([IronFormElementBehavior], 
           padding: 0px;
         }
          ith-dropdown-menu,
+	iron-input,
+
          ith-recipients-settings,
          .recipient-container {
            min-width: 100%;
            box-sizing: border-box;
          }
+
          .from-drop-down {
            border-bottom: 2px solid  var(--light-theme-background-color);
            padding: 20px;
@@ -66,88 +77,111 @@ class IthPatientEventSettings extends mixinBehaviors([IronFormElementBehavior], 
         }
       </style>
       <div class="main-list-container">
-        <div class="event-title">[[event.eventName]]</div>
+        <!--<div class="event-title">[[event.eventName]]</div>-->
         <div class="layout horizontal header-list-container">
-          <div class="flex-1 layout vertical center-justified border header-cell-content">setting</div>
-          <div class="flex-3 layout vertical center-justified header-cell-content">value</div>
+          <div class="flex-1 layout vertical center-justified border header-cell-content">[[event.tag]] settings</div>
+          <!--<div class="flex-3 layout vertical center-justified header-cell-content">value</div>-->
         </div>
         <iron-form id="ironForm" >
           <form id="form">
             <div class="layout horizontal list-container">
-              <ith-dropdown-menu class="border cell-content flex-1" 
-                value="{{_getLabel(event.timeType)}}" 
-                name="timeType"
-                label="[[_getLabel(event.timeType)]]" 
-                items="[[_timePeriodLabel]]"
-                on-value-changed="_setValue">
-              </ith-dropdown-menu>
+         
+             
+
+
+<div class="layout horizontal cell-content border">
+
+              
+                        <div style="margin-top:33px">Time Type </div>
+            <iron-input bind-value="{{_getLabel(event.timeType)}}">
+               <input style ="width:200px; margin-left:20px; margin-top:20px" on-value-changed="_setValue" readonly>
+            </iron-input>
+                     
+</div>
+
+
+
               <div class="flex-3 layout horizontal cell-content time-period-container">
-                <ith-dropdown-menu 
-                    hidden$="[[!_eq(event.timeType, 'TimePeriod')]]" 
-                    value="[[event.betweenTime.startTime]]"
-                    name="timeFrom"
-                    class="drop-down from-drop-down flex-1" 
-                    placeholder="From"  
-                    label="Time from" 
-                    items="[[_timePeriods]]"
-                    on-value-changed="_setValue">
-                </ith-dropdown-menu>
-                <ith-dropdown-menu 
-                  value="[[event.betweenTime.endTime]]" 
-                  hidden$="[[!_eq(event.timeType, 'TimePeriod')]]" 
-                  class="flex-1 time-period-dropdown" 
-                  placeholder="To"  
-                  name="timeTo"
-                  label="Time to" 
-                  items="[[_timePeriods]]"
-                  on-value-changed="_setValue">
-                </ith-dropdown-menu>
-                <ith-dropdown-menu 
-                  hidden$="[[!_eq(event.timeType, 'WithinPrevious')]]" 
-                  class="flex-1 drop-down time-period-dropdown" 
-                  placeholder="Duration (mins)"
-                  value="[[event.duration.duration]]"
-                  name="duration"
-                  label="Duration" 
-                  items="[[_durations]]"
-                  on-value-changed="_setValue">
-                </ith-dropdown-menu>
-                <ith-dropdown-menu 
-                  hidden$="[[!_eq(event.timeType, 'AtTime')]]" 
-                  class="flex-1 drop-down time-period-dropdown" 
-                  placeholder="Time"
-                  value="[[_getTime(event.time.time)]]"
-                  name="time"
-                  label="Time" 
-                  items="[[_timePeriods]]"
-                  on-value-changed="_setValue">
-                </ith-dropdown-menu>
-                  <div class="flex-1" hidden$="[[_hideTimePeriodDropDown]]"></div>
-                <div class="flex-2"></div>
-              </div>
-            </div>
-            <div class="layout horizontal list-container">
-              <ith-dropdown-menu class="border cell-content flex-1" 
-                value="{{event.tag}}" 
-                name="tag"
-                label="Sensor used" 
-                items="[[_sensors]]"
-                on-value-changed="_setValue">
-              </ith-dropdown-menu>
-              <div class="flex-3 layout horizontal cell-content">
-                <ith-dropdown-menu 
-                    value="[[event.deviceId]]"
+             
+
+                  <div style="margin-top:12px;">Time From</div>
+            <iron-input bind-value="{{_getTime(event.betweenTime.startTime)}}">
+               <input style ="width:200px; margin-left:6px;" on-value-changed="_changedTime" readonly id="stime">
+            </iron-input>
+             <div></div>
+                <div style="margin-top:12px;">Time To</div>
+            <iron-input bind-value="{{_getTime(event.betweenTime.endTime)}}">
+               <input style ="width:200px; margin-left:6px;" on-value-changed="_changedTime" readonly id="etime">
+            </iron-input>
+               
+                 <div class="flex-1"></div>
+               
+                 <!--   <ith-dropdown-menu 
+                    value="[[event.timeOut]]"
+                    hidden$="[[_eq(event.timeOut, '')]]"
                     name="device"
-                    class="drop-down flex-1" 
-                    placeholder="Device"  
-                    items="[[_devices]]"
-                    label="Device Used" >
-                </ith-dropdown-menu>
-                <div class="flex-1"></div>
+                    class="flex-3 drop-down " 
+                    placeholder="Threshhold"  
+                    items="[[_durations]]"
+                    label="Time Out" 
+                     ></ith-dropdown-menu>-->
+             <div style="margin-top:12px;" id ="tout" hidden$="[[_eq2(event.timeOut)]]"
+
+>TimeOut</div>
+            <iron-input bind-value="{{event.timeOut}}">
+               <input style ="width:200px; margin-left:6px;" on-value-changed="_changedTime" readonly id="etimeout" hidden$="[[_eq2(event.timeOut)]]">
+            </iron-input>
+
+                     
+                 <div class="flex-1" hidden$="[[_hideTimePeriodDropDown]]"></div>
+                 </div>
+                 
+         
+            </div>
+            <div class="layout horizontal list-container">
+           <div class="layout horizontal cell-content sensor border">
+
+
+
+
+
+
+
+
+
+
+              
+               <div style="margin-top:12px;">Sensor Used</div>
+
+
+            <iron-input bind-value="{{event.tag}}">
+               <input style ="width:200px; margin-left:6px;" on-value-changed="_setValue" readonly>
+            </iron-input> 
+</div>
+
+              <div class="flex-1 layout horizontal cell-content">
+              
+                        <div style="margin-top:12px">Device Used</div>
+            <iron-input bind-value="{{event.deviceId}}">
+               <input style ="width:200px; margin-left:20px" on-value-changed="_setValue" readonly>
+            </iron-input>
+                     
+                
+                <!-- <div class="drop-down flex-3">
+                  <paper-checkbox checked  hidden$="[[_eq1(event.generateEvent)]]">[[_checklabel(event.generateEvent)]]</paper-checkbox>
+                </div>-->
+                <div class="flex-1">
+                 
+                </div>
                 <div class="flex-2"></div>
               </div>
             </div>
-            <div class="layout horizontal list-container">
+               <div class="layout horizontal list-container">
+                 <div class="border cell-content flex-1">
+                  <paper-checkbox checked  hidden$="[[_eq1(event.generateEvent)]]">[[_checklabel(event.generateEvent)]]</paper-checkbox>
+                </div>
+               </div>
+            <!--<div class="layout horizontal list-container">
               <ith-dropdown-menu 
                 value="{{action.actionType}}" 
                 class="border cell-content flex-1" 
@@ -198,7 +232,7 @@ class IthPatientEventSettings extends mixinBehaviors([IronFormElementBehavior], 
                   </ith-dropdown-menu>
               </div>
               <div class="flex-2"></div>
-            </div>
+            </div>-->
           </form>
         </iron-form>
       </div>
@@ -222,14 +256,17 @@ class IthPatientEventSettings extends mixinBehaviors([IronFormElementBehavior], 
           type: Array,
           value: []
       },
+      category:{
+           type:String
+              },
       
       _timePeriods: {
         type: Array,
         value: function(){
-          return ['0:00','1:00','1:30','2:00','3:00','3:30','4:00','4:30','5:00','6:00','6:30','7:00',
-                 '7:30','8:00','8:30','9:00','10:00','11:00','12:00','12:30','13:00','13:30','14:00','14:30',
+          return ['0:00','1:00','1:30','2:00','2:30','3:00','3:30','4:00','4:30','5:00','5:30','6:00','6:30','7:00',
+                 '7:30','8:00','8:30','9:00','9:30','10:00','10:30','11:00','11:30','12:00','12:30','13:00','13:30','14:00','14:30',
                  '15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30','19:00','19:30','20:00',
-                 '20:30','21:00','21:30','22:00','22:30','23:00']
+                 '20:30','21:00','21:30','22:00','22:30','23:00','23:30']
         }
       },
 
@@ -258,7 +295,7 @@ class IthPatientEventSettings extends mixinBehaviors([IronFormElementBehavior], 
       _timePeriodLabel: {
         type: Array,
         value: function(){
-          return ['Time Period', 'Time Duration']
+          return ['Time Period', '']
         }
       },
 
@@ -282,6 +319,12 @@ class IthPatientEventSettings extends mixinBehaviors([IronFormElementBehavior], 
       _hideTimePeriodDropDown: {
         type: Boolean,
         value: false
+      },
+       start: {
+        type: String
+      },
+      end: {
+        type: String
       }
     }; 
   }
@@ -317,6 +360,7 @@ class IthPatientEventSettings extends mixinBehaviors([IronFormElementBehavior], 
   }
   
   _eq(str1, str2){
+    
     return str1 === str2;
   }
 
@@ -372,15 +416,111 @@ class IthPatientEventSettings extends mixinBehaviors([IronFormElementBehavior], 
           return "Time Period";
       }
 
-      return type;
+     // return type;
   }
+
 
   _getTime(dt) {
-      var odt = new Date(dt);
-      //odt.setTime(dt);
+       
+      var odt = new Date(parseInt(dt));
+     //alert(odt);
+      var m = odt.getMinutes();
+      if (m< 10)
+      {
+       m = "0" + m;
+      }
 
-      return odt.getHours() + ":" + odt.getMinutes();
+     // console.log(odt.getDate()+"--"+odt.toUTCString()+"----"+odt.getHours()+":"+m);
+      return odt.getHours() + ":" + m;
   }
+  _getTime1(dt) {
+      var odt = new Date(dt);
+      var utc = odt.getTime() + (odt.getTimezoneOffset() * 60000);
+     var nd = new Date(utc);
+      var m = "0" + nd.getMinutes();
+      //var t=odt.getHours()+localOffset;
+      //var s=odt.toUTCString();
+     // console.log(odt.getDate()+"--"+utc+"--"+odt.toUTCString()+"----"+odt.getHours());
+     // var m=odt.getMinutes();
+      //odt.setTime(dt);
+      // if ((m.substr(-2)) < 10) {
+   // m = "0" + m;
+  //}
+       
+
+      return nd.getHours() + ":" + m.substr(-2);
+  }
+
+    _getTimenew(dt) {
+      var odt = new Date(dt);
+      var m = odt.getMinutes().toLocaleString('en-US', {timeZone: "Asia/Kolkata"});
+      if (m< 10)
+      {
+       m = "0" + m;
+      }
+     // console.log(odt.getDate()+"--"+odt.toUTCString()+"----"+odt.getHours()+":"+m);
+      return odt.getHours().toLocaleString('en-US', {timeZone: "Asia/Kolkata"}) + ":" + m;
+  }
+     _eq1(str1){
+       if(str1==null||str1=="NA"||str1=="")
+        {
+
+       return true;
+        }
+        else
+         {
+
+         return false;
+         }
+  }
+
+    _eq2(str1){
+       if(str1==null||str1=="0")
+        {
+
+       return true;
+        }
+        else
+         {
+
+         return false;
+         }
+  }
+
+    _checklabel(str1){
+       if(str1=="1"||str1=="true")
+        {
+        
+        return "Generate " +this.category+" Event";
+        }
+        else if(str1=="0"||str1=="false")
+         {
+         return "Generate "+this.category+" Missed Event";
+         }
+        else if(str1=="2")
+         {
+         return "Generate Both (" +this.category+" Event and "+this.category+" Missed Event)";
+         }
+  }
+
+    _changeTime()
+      {
+         var evt={};
+      var evts=[];
+      evt.start=this.$.stime.value;
+    evt.end=this.$.etime.value;
+    evt.tag=this.event.tag;
+    evt.sequence=this.event.sequence;
+      // this.start=e.target.value;
+       this.dispatchEvent(new CustomEvent('patient-edit-templates', { detail: evt}));
+      }
+   
+   _changeToTime(e)
+      {
+       this.end=e.target.value;
+  this.dispatchEvent(new CustomEvent('patient-edit-templates', { detail: {'start':this.$.stime.value, 'end':this.end,'tag':this.event.tag,'sequence':this.event.sequence }}));
+      }
+
 }
 
 window.customElements.define('ith-patient-event-settings', IthPatientEventSettings);

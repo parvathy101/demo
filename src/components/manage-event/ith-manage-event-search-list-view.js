@@ -15,7 +15,7 @@ import {
 import '@polymer/paper-button/paper-button';
 import '@polymer/iron-flex-layout/iron-flex-layout-classes';
 import '@polymer/paper-spinner/paper-spinner';
-import '@polymer/paper-toast/paper-toast';
+import '@polymer/paper-toast/paper-toast.js';
 import '@polymer/iron-media-query/iron-media-query';
 import '@polymer/iron-icon/iron-icon';
 import '@polymer/paper-styles/default-theme';
@@ -55,6 +55,13 @@ class IthManageEventSearchListView extends (PolymerElement) {
         .header-last-child {
           min-width: 110px;
         }
+        paper-toast {
+        width: 300px;
+        margin-left: calc(50vw - 150px);
+        margin-bottom: calc(50vw - 150px);
+        background:#e5ebef;
+        color:#2f3042;
+      }
         :host([mode='NORMAL']) .advance-search-main-container{
           display: none;
         }
@@ -120,7 +127,14 @@ class IthManageEventSearchListView extends (PolymerElement) {
          .advance-search-container {
            flex-wrap: wrap;
          }
-        }
+         }
+        paper-toast {
+        width: 300px;
+        margin-left: calc(50vw - 150px);
+        margin-bottom: calc(50vw - 300px);
+        background:#e5ebef;
+        color:#2f3042;
+      }
       </style>
 
     <ith-template-selection-dialog selected-templates="{{selectedTemplates}}" 
@@ -174,26 +188,27 @@ class IthManageEventSearchListView extends (PolymerElement) {
      </template>
 
       <div class="list" hidden$="[[!_hasSearchResults(searchResult)]]">
-        <div class="layout horizontal header-list-container">
-          <div class=" header-cell-margin cell-content layout vertical center-justified flex-1">event title</div>
-          <div class=" header-cell-margin  layout vertical center-justified flex-2 header-description">short description</div>
-          <div class=" header-cell-margin cell-content layout vertical center-justified flex-1">sensors</div>
-          <div class=" layout vertical cell-content center-justified flex-1 header-last-child"></div>
+       <div class="layout horizontal header-list-container">
+          <div class="layout vertical center-justified flex-2" style="margin-left:150px">event title</div>
+          <div class="layout vertical center-justified flex-1" style="margin-right:200px">short description</div>
+          <!--<div class=" header-cell-margin cell-content layout vertical center-justified flex-1">sensors</div>
+          <div class="layout vertical center-justified flex-1 header-last-child"></div>-->
         </div>
-        <template is="dom-repeat" items="[[searchResult]]">
+        <template is="dom-repeat" items="{{searchResult}}">
             <ith-manage-event-search-item template="[[item]]" used="[[_usedTemplate]]"
             class="event-row"
                                     selected="[[_isInSelection(selectedTemplates, item)]]"
                                     on-add-selection="_addToSelection"
                                     on-remove-selection="_removeFromSelection"
                                     ></ith-manage-event-search-item>
-        </template>      
+        </template>  
+       <paper-toast id="toast"></paper-toast>    
      </div>
      
      
 
      <paper-toast opened="[[_showToast(_searchFailureReason)]]" text="Search request failed"></paper-toast>
-     <telehealthcareflow-associateeventdef id="associateeventdef" on-associated-eventdef="_addedTemplates"></telehealthcareflow-associateeventdef>
+     <telehealthcareflow-associateeventdef id="associateeventdef" on-associated-eventdef="_addedTemplates" on-associateeventdef-error="_onerror" on-session-expired="_session"></telehealthcareflow-associateeventdef>
     `;
   }
 
@@ -277,6 +292,7 @@ class IthManageEventSearchListView extends (PolymerElement) {
  connectedCallback(){
    super.connectedCallback();
    window.addEventListener('reset-advance-search', this._resetAdvanceSearch.bind(this))
+   
  }
 
  _resetAdvanceSearch(){
@@ -288,18 +304,25 @@ class IthManageEventSearchListView extends (PolymerElement) {
 
   _onKeyDown(e) {
     if(e.keyCode !== 13) {
+     
       return;
     }
-
+   
     let noDelay = true;
     this._search(noDelay);
+     
   }
 
   _isInSelection(selectedTemplates, template) {
+    
+       
     for(var i=0;i<selectedTemplates.length; i++){
       if(selectedTemplates[i].name === template.name) {
+        console.log(selectedTemplates[i].name+"----"+template.name);
+         
         return true;
       }
+   
     }
     return false;
   }
@@ -310,35 +333,58 @@ class IthManageEventSearchListView extends (PolymerElement) {
     var timeFrom = this.$.timeFrom.value;    
     var timeTo = this.$.timeTo.value;
     var searchValue = this.$.search.value;
+ 
    
   }
 
   _showToast(failedReason){
+    console.log(this.subscriber+"qqq");
+     
     return failedReason;
   }
 
   _showLoaderView(searchReqInprogress, reaseResults){
+      
+     for (var i = 0; i < this.selectedTemplates.length; i++) {
+       if(reaseResults==undefined||reaseResults==null)
+        {
+     // var template = this.selectedTemplates[i];
+     this._remove(this.selectedTemplates[i].name);
+      this.searchResult=null;
+      }
+    }
+    console.log(searchReqInprogress+"****"+reaseResults);
     return searchReqInprogress && (!reaseResults || !reaseResults.length);
     }
 
   _hasSearchResults(searchResult){
+   
     if(searchResult && searchResult.length){
+         
       return true;
     }
-
+   
     return false;
   }
 
   _addSelectedTemplates(e) {
+   
     this.mode = 'NORMAL';
     for (var i = 0; i < this.selectedTemplates.length; i++) {
         var template = this.selectedTemplates[i];
-        this.$.associateeventdef.associateEventDef(this.subscriber, template.name, 1);
+        this.$.associateeventdef.associateEventDef(this.subscriber, template.name, 1,1,"critical alert","","");
+         
     }
+    //this.selectedTemplates=null;
   }
 
-  _addedTemplates() {
-      this.dispatchEvent(new CustomEvent("added-templates"));
+  _addedTemplates(e) {
+     for (var i = 0; i < this.selectedTemplates.length; i++) {
+      var template = this.selectedTemplates[i];
+     this._remove(template.name);
+    }
+     this.dispatchEvent(new CustomEvent("added-templates"));
+      
   }
 
   _addToSelection(e) {
@@ -349,7 +395,23 @@ class IthManageEventSearchListView extends (PolymerElement) {
   }
 
   _hasSelectedTemplates(templates) {
-      return ((templates != undefined) && (templates.length > 0));
+
+     
+     return ((templates != undefined) && (templates.length > 0));
+     
+
+  }
+  _remove(a) {
+      var temp = [];
+     for (var i = 0; i < this.selectedTemplates.length; i++) {
+         var template = this.selectedTemplates[i];
+         if (template.name == a) {
+         } else {
+             temp.push(this.selectedTemplates[i]);
+         }
+     }
+
+     this.selectedTemplates = temp;
   }
 
   _removeFromSelection(e) {
@@ -364,6 +426,50 @@ class IthManageEventSearchListView extends (PolymerElement) {
 
      this.selectedTemplates = temp;
   }
+   load()
+    {
+      console.log("asdsaefcdfcsc");
+    }
+
+  
+     _onerror(event){
+      
+      var toast = this.$.toast;
+  toast.show({
+    horizontalAlign: 'left',
+    verticalAlign: 'bottom',
+    duration: 5000,
+    text: "No matching device found to associate. Please install the device."
+  });
+   
+      
+}
+
+_session(event)
+{
+ var session = event.detail.session;
+  
+    if (session != undefined) 
+        {
+        if (session.startsWith("Session Expired"))
+          {
+
+
+             var toast = this.$.toast;
+             
+ 		 toast.show({
+  			  horizontalAlign: 'left',
+  			  verticalAlign: 'bottom',
+  			  duration: 10000,
+  			  text: "Session Expired. Please login again"
+ 			 });
+
+                 return false;
+  	  }
+
+        }
+}
+    
 }
 
 window.customElements.define('ith-manage-event-search-list-view', IthManageEventSearchListView);

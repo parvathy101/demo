@@ -16,6 +16,8 @@ import './shared-styles/paper-button-styles.js';
 import './api/telehealthcareflow-getsubscriberdetails.js';
 import './search/search-listview.js';
 import './dialogs/device-add.js'
+import './dialogs/device-edit.js'
+import '@polymer/paper-toast/paper-toast.js';
 
 class MyManageDevices extends PolymerElement {
   static get template() {
@@ -32,30 +34,36 @@ class MyManageDevices extends PolymerElement {
         .title-container {
           padding-bottom: 14px;
         }
+     paper-toast {
+        width: 300px;
+        margin-left: calc(50vw - 150px);
+        margin-bottom: calc(50vw - 150px);
+        background:#e5ebef;
+        color:#2f3042;
+      }
       </style>
 
       <div class="content-title">
         <h2>Add/Edit Devices</h2>
       </div>
       <div class="card-header">
-        <div class="flex-1 event-title self-end">User Devices</div>
+        <div class="flex-1 event-title self-end"></div>
       </div>
       <div class="card-content">
         <div class="content-two">
           <div class="layout horizontal title-container">
-            <div class="flex title">Devices</div>
+            <div class="flex title"></div>
             <paper-button class="filledBlue" on-tap="_openAddEditDialog">+ add device</paper-button>
           </div>
           <search-listview class="search-result" columns="[[columns]]"
-            search-result="{{subscriber.devices}}" mode="{{_mode}}" on-action-edit="_showDetails"></search-listview>
+            search-result="{{subscriber.devices}}" mode="{{_mode}}" on-action-edit="_showDetails"  title="Edit"></search-listview>
         </div>
+       <paper-toast id="toast"></paper-toast>
       </div>
-      <div class="card-buttons layout horizontal">
-          <span class="flex">&nbsp;</span>
-          <paper-button class="filledWhite" on-click="_loginNow">SAVE</paper-button>
-      </div>
-      <telehealthcareflow-getsubscriberdetails id="getdetails" on-subscriber-details="_setupSubscriber"></telehealthcareflow-getsubscriberdetails>
-      <device-add id="addDevice" on-registered-device="reloadData" subscriber="[[subscriber.email]]"></device-add>
+    
+      <telehealthcareflow-getsubscriberdetails id="getdetails" on-subscriber-details="_setupSubscriber" on-session-expired="_session"></telehealthcareflow-getsubscriberdetails>
+      <device-add id="addDevice" on-registered-device="reloadData" subscriber="[[subscriber.email]]" on-device-created="reloadData"></device-add>
+<device-edit id="editdevice" on-device-edited="reloadData"></device-edit>
     `;
   }
 
@@ -72,11 +80,11 @@ class MyManageDevices extends PolymerElement {
       subscriber: {
           type: Object
       },
-      email: {
+      deviceId: {
           type: String
       }
     };
-  }
+  } 
 
   _setupSubscriber(event) {
       if (event.detail.data != undefined) {
@@ -93,13 +101,50 @@ class MyManageDevices extends PolymerElement {
   }
 
   reloadData() {
+ this.subscriber = null;
       this.loadData(this.email);
   }
 
+
+_showDetails(event) {
+     // var device = event.detail.data;
+     this.dispatchEvent(new CustomEvent("change-page", { detail: { activepage: this.$.editdevice.open()}}));
+      //this.$.editdevice.open();
+      this.$.editdevice.loadData(event.detail.data.deviceId,this.subscriber.email,event.detail.data.deviceType,event.detail.data.tag,event.detail.data.connectionKey);
+  }
+
   loadData(email) {
+    this.subscriber=null;
     this.email = email;
     this.$.getdetails.getDetails(email);
   }
+
+
+_session(event)
+{
+ var session = event.detail.session;
+  
+    if (session != undefined) 
+        {
+        if (session.startsWith("Session Expired"))
+          {
+
+
+             var toast = this.$.toast;
+             
+ 		 toast.show({
+  			  horizontalAlign: 'left',
+  			  verticalAlign: 'bottom',
+  			  duration: 10000,
+  			  text: "Session Expired. Please login again"
+ 			 });
+
+                 return false;
+  	  }
+
+        }
+}
+
 }
 
 window.customElements.define('my-managedevices', MyManageDevices);

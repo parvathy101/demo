@@ -15,6 +15,7 @@ const $_documentContainer = document.createElement('template');
 $_documentContainer.innerHTML = `<dom-module id="paper-button-styles">
   <template>    
   <style>
+*{ -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; margin:0;padding:0;}
    paper-button {
       border-radius: 1px;
       font-size: 14px;

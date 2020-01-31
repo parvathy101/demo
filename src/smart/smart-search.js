@@ -51,6 +51,7 @@ class SmartSearch extends PolymerElement {
   _handleResults(evt) {
       var response = evt.detail.responses[0];
       this.searchResult = response['searchResult'];
+     console.log(this.searchResult+"zzz");
   }
 
   _handleError(evt) {

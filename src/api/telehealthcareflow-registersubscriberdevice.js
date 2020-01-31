@@ -10,12 +10,12 @@
 
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import '../shared-styles/shared-styles.js';
-import '../smart/smart-client.js';
+import '../smart/php-client.js';
 
 class TeleHealthcareFlowRegisterSubscriberDevice extends PolymerElement {
   static get template() {
     return html`
-      <smart-client id="client" flow="TeleHealthcareFlow" flow-event="{{_postEvent}}" on-smart-network-error="_handleError" on-smart-error="_handleError" on-smart-response="_handleResponse" ></smart-client>
+     <php-client id="client" flow="smart" flow-event="{{_postEvent}}" on-smart-network-error="_handleError" on-smart-error="_handleError" on-smart-response="_handleResponse" ></php-client>
     `;
   }
 
@@ -43,23 +43,42 @@ class TeleHealthcareFlowRegisterSubscriberDevice extends PolymerElement {
   }
 
   _handleResponse(e) {
-    var response = e.detail.responses[0];
-    this.dispatchEvent(new CustomEvent("registered-device", { detail: { 'message': response }}));
+     
+   var response = e.detail.responses.responses[0].message;
+    var response1=e.detail.responses.responses[0].error;
+var response2=e.detail.responses.responses[0].session;
+console.log(response2);
+   
+    if(response!=undefined)
+     {
+     
+   this.dispatchEvent(new CustomEvent("registered-device", { detail: { 'message': response }}));
+     }
+    if(response1!=undefined)
+     {
+
+       this.dispatchEvent(new CustomEvent("registerdevice-error", { detail: { 'error': response1}}));
+     }
+if(response2!=undefined)
+     {
+     
+   this.dispatchEvent(new CustomEvent("session-expired", { detail: { 'session': response2}}));
+     }
+
   }
 
   registerSubscriberDevice(subscriber, did, dtype, conn, tag) {
       this.$.client._dataChanged();
-      this._postEvent = "RegisterSubscriberDevice";
+      this._postEvent = "registerdevice.php";
       var postData = {};
+      postData.subscriber = subscriber;
       postData.deviceId = did;
       postData.deviceType = dtype;
       postData.connectionKey = conn;
       postData.tag = tag;
 
-      var postTo = {};
-      postTo['Subscriber'] = subscriber;
 
-      this.$.client.postSmart(postTo, postData);
+      this.$.client.postSmart(postData);
   }
 }
 

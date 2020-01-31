@@ -10,12 +10,12 @@
 
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import '../shared-styles/shared-styles.js';
-import '../smart/smart-client.js';
+import '../smart/php-client.js';
 
 class TeleHealthcareFlowCreateEventTemplate extends PolymerElement {
   static get template() {
     return html`
-      <smart-client id="client" flow="TeleHealthcareFlow" flow-event="{{_postEvent}}" on-smart-network-error="_handleError" on-smart-error="_handleError" on-smart-response="_handleResponse" ></smart-client>
+      <php-client id="client" flow="smart" flow-event="{{_postEvent}}" on-smart-network-error="_handleError" on-smart-error="_handleError" on-smart-response="_handleResponse" ></php-client>
     `;
   }
 
@@ -43,13 +43,33 @@ class TeleHealthcareFlowCreateEventTemplate extends PolymerElement {
   }
 
   _handleResponse(e) {
-    var response = e.detail.responses[0];
-    this.dispatchEvent(new CustomEvent("created-eventtemplate", { detail: { 'message': response }}));
+    
+
+       var response = e.detail.responses.responses[0].message;
+    var response1=e.detail.responses.responses[0].error;
+    var response2=e.detail.responses.responses[0].session;
+     if(response!=undefined)
+     {
+     console.log(response);
+   this.dispatchEvent(new CustomEvent("created-eventtemplate", { detail: { 'message': response }}));
+     }
+    if(response1!=undefined)
+     {
+      console.log(response1);
+      this.dispatchEvent(new CustomEvent("createeventtemplate-error", { detail: { 'error': response1}}));
+     }
+
+if(response2!=undefined)
+     {
+     
+   this.dispatchEvent(new CustomEvent("session-expired", { detail: { 'session': response2}}));
+     }
+
   }
 
   createEventTemplate(evt) {
       this.$.client._dataChanged();
-      this._postEvent = "CreateEventTemplate";
+      this._postEvent = "createtemplate.php";
       var postData = {};
       postData.name = evt.name;
       postData.description = evt.description;
@@ -59,11 +79,9 @@ class TeleHealthcareFlowCreateEventTemplate extends PolymerElement {
       postData.actionName = evt.actionName;
       postData.tag = evt.tag;
       postData.eventDetails = evt.eventDetails;
+    
 
-      var postTo = {};
-      postTo['FlowAdmin'] = "TeleHealthcareFlow";
-
-      this.$.client.postSmart(postTo, postData);
+      this.$.client.postSmart(postData);
   }
 }
 

@@ -10,12 +10,14 @@
 
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import '../shared-styles/shared-styles.js';
-import '../smart/smart-client.js';
+import '../smart/php-client.js';
+import "../smart/smart-config.js";
 
 class TeleHealthcareFlowLookup extends PolymerElement {
   static get template() {
     return html`
-      <smart-client id="client" flow="TeleHealthcareFlow" flow-event="{{_postEvent}}" on-smart-network-error="_handleError" on-smart-error="_handleError" on-smart-response="_handleResponse" ></smart-client>
+      <php-client id="client" flow="smart" flow-event="{{_postEvent}}" on-smart-network-error="_handleError" on-smart-error="_handleError" on-smart-response="_handleResponse" ></php-client>
+<smart-config id="globals"></smart-config>
     `;
   }
 
@@ -43,21 +45,30 @@ class TeleHealthcareFlowLookup extends PolymerElement {
   }
 
   _handleResponse(e) {
-    var response = e.detail.responses[0];
+    var response = e.detail.responses.responses[0];
+    var response2=response.session;
+    if(response2!=undefined)
+     {
+     
+   this.dispatchEvent(new CustomEvent("session-expired", { detail: { 'session': response2}}));
+     }
+     if(response!=undefined)
+     {
+     
     this.dispatchEvent(new CustomEvent("lookup-success", { detail: { 'object': response}}));
+    }
   }
 
   lookup(group, key) {
       this.$.client._dataChanged();
-      this._postEvent = "LookupEvent";
+      this._postEvent = "lookup.php";
       var postData = {};
       postData.group = group;
       postData.key = key;
-      var postTo = {};
-      postTo['FlowAdmin'] = "TeleHealthcareFlow";
-
-      this.$.client.postSmart(postTo, postData);
+      this.$.globals.userId=key;
+      this.$.client.postSmart(postData);
   }
+  
 }
 
 window.customElements.define('telehealthcareflow-lookup', TeleHealthcareFlowLookup);

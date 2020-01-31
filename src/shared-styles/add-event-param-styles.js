@@ -16,6 +16,7 @@ $_documentContainer.innerHTML = `
 <dom-module id="add-event-param-styles">
   <template>    
     <style>
+*{ -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; margin:0;padding:0;}
     .main-title {
       font-size: 22px;
       font-family: 'Roboto-Bold';

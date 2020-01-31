@@ -23,11 +23,19 @@ class IthEventTemplateHeader extends (PolymerElement) {
         padding: 10px;
       }
       .event-template-title{
-        font-size: 18px;
+        font-size: 14px;
         color: var(--app-text-color);
         font-family: 'Roboto-Bold';
         line-height: 20px;
-        padding: 0px 0px 0px 32px;
+        padding: 0px 3px 0px 11px;
+      }
+      .event-template-type{
+        font-size: 18px;
+        color:var(--app-accent-color);
+        font-family: 'Roboto-Bold';
+        line-height: 20px;
+        //padding: 0px 200px 0px 5px;
+        padding-right: 100px;
       }
       .delete-btn{
         margin-right: 16px;
@@ -94,20 +102,36 @@ class IthEventTemplateHeader extends (PolymerElement) {
         }
       }
       </style>
-      <div class="layout horizontal event-template-container">
-        <span class="event-template-title  flex-1 self-center">[[title]]</span>
-        <div class="layout horizontal flex-1 action-container">
-          <div class="flex-1 layout vertical status-container">
-              <ith-event-status-select id="eventStatus"  on-value-changed="_dispatchTemplateStatus"></ith-event-status-select>
+      <div class="layout horizontal event-template-container"> 
+       <div class="event-template-title self-center" style="margin-right:5px; width:200px">
+              Template Name:
           </div>
+       <div class="event-template-type self-center" style="width:400px">
+             [[title]]
+          </div>
+          <div class="event-template-title self-center" style="margin-right:5px; width:200px">
+              Event Type:
+          </div>
+       <div class="event-template-type self-center" style="width:400px">
+             [[category]]
+          </div>
+          <div class="event-template-title self-center" style="margin-right:5px; width:200px">
+       <img src="/src/images/ico.png">
+        </div>
+        <div class="layout horizontal flex-1 action-container">
+        <!-- <div class="flex-1 layout vertical status-container">
+              <ith-event-status-select id="eventStatus"  on-value-changed="_dispatchTemplateStatus"></ith-event-status-select>
+         
+          </div>-->
+          <paper-button class="filledBlue edit-btn" on-tap="_dispatchTemplateEditEvent"  hidden="[[hidePatientEventTemplate]]">
+            <iron-icon icon="ithings-icons:edit"></iron-icon>
+            <div  class="btn-text">Edit</div>
+          </paper-button>
           <paper-button class="filledBlue delete-btn" on-tap="_dispatchTemplateDeleteEvent">
             <iron-icon icon="ithings-icons:delete"></iron-icon>
             <div class="btn-text">delete</div>
           </paper-button>
-          <paper-button class="filledBlue edit-btn" on-tap="_dispatchTemplateEditEvent"  hidden="[[hidePatientEventTemplate]]">
-            <iron-icon icon="ithings-icons:edit"></iron-icon>
-            <div  class="btn-text">edit event</div>
-          </paper-button>
+         
         </div>
       </div>
     `;
@@ -116,6 +140,7 @@ class IthEventTemplateHeader extends (PolymerElement) {
   static get properties() {
     return {
       title: String,
+      category:String,
       hidePatientEventTemplate: {
         type: Boolean,
         value: false,
@@ -133,6 +158,7 @@ class IthEventTemplateHeader extends (PolymerElement) {
   }
 
   _dispatchTemplateDeleteEvent(){
+     this.dispatchEvent(new CustomEvent('delete-template'));
   }
 
   _stateChanged(state) {}

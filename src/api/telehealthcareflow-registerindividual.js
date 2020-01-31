@@ -10,12 +10,12 @@
 
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import '../shared-styles/shared-styles.js';
-import '../smart/smart-client.js';
+import '../smart/php-client.js';
 
 class TeleHealthcareFlowRegisterIndividual extends PolymerElement {
   static get template() {
     return html`
-      <smart-client id="client" flow="TeleHealthcareFlow" flow-event="{{_postEvent}}" on-smart-network-error="_handleError" on-smart-error="_handleError" on-smart-response="_handleResponse" ></smart-client>
+       <php-client id="client" flow="smart" flow-event="{{_postEvent}}" on-smart-network-error="_handleError" on-smart-error="_handleError" on-smart-response="_handleResponse" ></php-client>
     `;
   }
 
@@ -38,41 +38,53 @@ class TeleHealthcareFlowRegisterIndividual extends PolymerElement {
   _handleError(e) {
       var response = "";
       if (e.detail.responses != undefined) {
-        response = e.detail.responses[0];
-      } else if (e.detail.error != undefined) {
-          response = e.detail.error;
+        response = e.detail.responses[0].error;
       }
     this.dispatchEvent(new CustomEvent("createuser-error", { detail: { 'error': response}}));
   }
 
   _handleResponse(e) {
-    var response = e.detail.responses[0];
+    var response = e.detail.responses.responses[0].message;
+    var response1=e.detail.responses.responses[0].error;
+    var response2=e.detail.responses.responses[0].session;
+    if(response2!=undefined)
+     {
+     
+   this.dispatchEvent(new CustomEvent("session-expired", { detail: { 'session': response2}}));
+     }
+   
+    if(response!=undefined)
+     {
     this.dispatchEvent(new CustomEvent("registered-individual", { detail: { 'message': response, 'email': this.email }}));
+     }
+    if(response1!=undefined)
+     {
+      this.dispatchEvent(new CustomEvent("createuser-error", { detail: { 'error': response1}}));
+     }
   }
 
   registerIndividual(email, name, phone, s1, s2, pc, c, st, con, lat, lng) {
       this.email = email;
       this.$.client._dataChanged();
-      this._postEvent = "RegisterIndividual";
+      this._postEvent = "registerindividual.php";
       var postData = {};
-      postData.emailId = email;
+      postData.email = email;
       postData.name = name;
       postData.phone = phone;
-      postData.facilityAddress = {};
-      postData.facilityAddress.street1 = s1;
-      postData.facilityAddress.street2 = s2;
-      postData.facilityAddress.pincode = pc;
-      postData.facilityAddress.city = c;
-      postData.facilityAddress.state = st;
-      postData.facilityAddress.country = con;
+      postData.street1 = s1;
+      postData.street2 = s2;
+      postData.pincode = pc;
+      postData.city = c;
+      postData.state = st;
+      postData.country = con;
       postData.latitude = lat;
       postData.longitude = lng;
 
-      var postTo = {};
-      postTo['FlowAdmin'] = "TeleHealthcareFlow";
 
-      this.$.client.postSmart(postTo, postData);
+      this.$.client.postSmart(postData);
   }
+
+   
 }
 
 window.customElements.define('telehealthcareflow-registerindividual', TeleHealthcareFlowRegisterIndividual);

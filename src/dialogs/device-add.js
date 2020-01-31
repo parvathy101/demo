@@ -13,20 +13,49 @@ import '../shared-styles/shared-styles';
 import '../shared-styles/input-styles';
 import '../shared-styles/add-event-param-styles';
 import '../api/telehealthcareflow-registersubscriberdevice.js';
+import '../smart/smart-config.js';
+import '@polymer/paper-toast/paper-toast.js';
+import '@polymer/paper-dropdown-menu/paper-dropdown-menu.js';
+import '@polymer/paper-item/paper-item.js';
+import '@polymer/paper-listbox/paper-listbox.js';
 
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class';
 
 class DeviceAdd extends mixinBehaviors([PaperDialogBehavior], PolymerElement) {
   static get template() {
     return html`
-    <style include="shared-styles input-styles add-event-param-styles iron-flex iron-flex-factors iron-flex-alignment paper-dialog-shared-styles paper-button-styles">
+   <style include="shared-styles input-styles add-event-param-styles iron-flex iron-flex-factors iron-flex-alignment paper-dialog-shared-styles paper-button-styles">
+
       :host {
         display: block;
         min-width: 1024px;
+        top:60px;
+      }
+      @media (min-width:992px)and (max-width:1200px){
+        :host{
+          min-width:800px;
+        }
+      }
+      @media (min-width:641px) and (max-width:991px){
+        :host{
+          min-width:600px;
+        }
+      }
+      @media (max-width:640px){
+        :host{
+          min-width:300px;
+        }
+      }
+      paper-toast {
+        width: 300px;
+        margin-left: calc(50vw - 150px);
+        margin-bottom: calc(50vw - 150px);
+        background:#e5ebef;
+        color:#2f3042;
       }
     </style>
     <div class="layout horizontal center main-header">
-      <div class="main-title">Add User</div>
+      <div class="main-title">Add Device</div>
       <span class="flex"></span>
       <paper-icon-button dialog-dismiss="" class="dialog-close" icon="close"></paper-icon-button>
     </div>
@@ -43,16 +72,24 @@ class DeviceAdd extends mixinBehaviors([PaperDialogBehavior], PolymerElement) {
                         <input id="deviceId" required type="text" placeholder="Give your device an id"></input>
                     </div>
                     <div class="element">
-                        <div class="inputlabel">Device Type</div>
-                        <input id="deviceType" type="text" required placeholder="Select a device type"></input>
+                        
+                          <ith-dropdown-menu 
+            class="inputlabel" 
+             value="{{event.}}" 
+            name="deviceType"
+             items="[[_deviceType]]"
+            id="deviceType"
+            label="Device Type"
+            on-value-changed="_value">
+          </ith-dropdown-menu>
                     </div>
                     <div class="element">
                         <div class="inputlabel">Connection String</div>
-                        <input id="connection" type="text" required placeholder="Choose a connection method"></input>
+                        <input id="connection" type="text" required placeholder="Enter a connection method"></input>
                     </div>
                     <div class="element">
-                        <div class="inputlabel">Device Location</div>
-                        <input id="tag" type="text" required placeholder="Choose a when the device is placed."></input>
+                        <div class="inputlabel">Device Name</div>
+                        <input id="tag" type="text" required placeholder="Enter device name"></input>
                     </div>
                 </div>
             </div>
@@ -63,8 +100,10 @@ class DeviceAdd extends mixinBehaviors([PaperDialogBehavior], PolymerElement) {
       <paper-button class="filledWhite" on-tap="_registerDevice">
         add device
       </paper-button>
+<paper-toast id="toast"></paper-toast>
     </div>
-    <telehealthcareflow-registersubscriberdevice id="register" on-registered-device="_registeredDevice"></telehealthcareflow-registersubscriberdevice>
+    <telehealthcareflow-registersubscriberdevice id="register" on-registered-device="_registeredDevice" on-registerdevice-error="_error" on-session-expired="_session"></telehealthcareflow-registersubscriberdevice>
+<smart-config id="globals"></smart-config>
    `;
   }
 
@@ -78,7 +117,13 @@ class DeviceAdd extends mixinBehaviors([PaperDialogBehavior], PolymerElement) {
       },
       subscriber: {
           type: String
-      }
+      },
+    _deviceType: {
+        type: Array,
+        value: function(){
+          return ['samsungmotiondetector', 'iorbitmotiondetector']
+        }
+      },
     };
   }
 
@@ -95,14 +140,138 @@ class DeviceAdd extends mixinBehaviors([PaperDialogBehavior], PolymerElement) {
       var dtype = this.$.deviceType.value;
       var conn = this.$.connection.value;
       var tag = this.$.tag.value;
+      var toast = this.$.toast;
+    
+if(did == "")
+   {
+this.async((function() { 
+  toast.show({
+    horizontalAlign: 'left',
+    verticalAlign: 'bottom',
+    duration: 5000,
+    text: "Please fill the DeviceId field"
+  });
+}).bind(this), 100);
+
+   
+   return false;
+    }
+
+if(dtype == "")
+   {
+this.async((function() { 
+  toast.show({
+    horizontalAlign: 'left',
+    verticalAlign: 'bottom',
+    duration: 5000,
+    text: "Please Select Device Type"
+  });
+}).bind(this), 100);
+
+   
+   return false;
+    }
+
+if(conn == "")
+   {
+this.async((function() { 
+  toast.show({
+    horizontalAlign: 'left',
+    verticalAlign: 'bottom',
+    duration: 5000,
+    text: "Please fill the Connection field"
+  });
+}).bind(this), 100);
+
+   
+   return false;
+    }
+
+if(tag == "")
+   {
+this.async((function() { 
+  toast.show({
+    horizontalAlign: 'left',
+    verticalAlign: 'bottom',
+    duration: 5000,
+    text: "Please fill the Device Name field"
+  });
+}).bind(this), 100);
+
+   
+   return false;
+    }
+
+    
       this.$.register.registerSubscriberDevice(this.subscriber, did, dtype, conn, tag);
+ this.dispatchEvent(new CustomEvent('device-created'));
+
   }
 
   _registeredDevice(event) {
       var did = this.$.deviceId.value;
+       this.$.deviceId.value=null;
+       this.$.deviceType.value=null;
+       this.$.connection.value=null;
+       this.$.tag.value=null;
       this.close();
       this.dispatchEvent(new CustomEvent('registered-device', { detail: { 'device': did }}));
   }
+
+
+_error(event)
+{
+ var error = event.detail.error;
+  
+    if (error != undefined) 
+        {
+        if (error.startsWith("A device with the given deviceId is already"))
+          {
+
+
+             var toast = this.$.toast;
+             
+  toast.show({
+    horizontalAlign: 'left',
+    verticalAlign: 'bottom',
+    duration: 10000,
+    text: "Already registered Id."
+  });
+
+
+   
+   return false;
+    }
+
+
+
+        }
+       }
+
+_session(event)
+{
+ var session = event.detail.session;
+  
+    if (session != undefined) 
+        {
+        if (session.startsWith("Session Expired"))
+          {
+
+
+             var toast = this.$.toast;
+             
+ 		 toast.show({
+  			  horizontalAlign: 'left',
+  			  verticalAlign: 'bottom',
+  			  duration: 10000,
+  			  text: "Session Expired. Please login again"
+ 			 });
+
+                 return false;
+  	  }
+
+        }
+}
 
 }
 

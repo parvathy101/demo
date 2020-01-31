@@ -10,12 +10,12 @@
 
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import '../shared-styles/shared-styles.js';
-import '../smart/smart-client.js';
+import '../smart/php-client.js';
 
 class TeleHealthcareFlowAssociateEventDef extends PolymerElement {
   static get template() {
     return html`
-      <smart-client id="client" flow="TeleHealthcareFlow" flow-event="{{_postEvent}}" on-smart-network-error="_handleError" on-smart-error="_handleError" on-smart-response="_handleResponse" ></smart-client>
+      <php-client id="client" flow="smart" flow-event="{{_postEvent}}" on-smart-network-error="_handleError" on-smart-error="_handleError" on-smart-response="_handleResponse" ></php-client>
     `;
   }
 
@@ -25,6 +25,10 @@ class TeleHealthcareFlowAssociateEventDef extends PolymerElement {
           type: String,
           value: "AssociateEventDef"
       },
+       eventname: {
+        type: String,
+        notify: true
+      }
     };
   }
 
@@ -43,16 +47,42 @@ class TeleHealthcareFlowAssociateEventDef extends PolymerElement {
   }
 
   _handleResponse(e) {
-    var response = e.detail.responses[0];
-    this.dispatchEvent(new CustomEvent("associated-eventdef", { detail: { 'message': response }}));
+    //var response = e.detail.responses[0];
+console.log(e.detail.responses);
+
+ var response = e.detail.responses.responses[0].message;
+    var response1=e.detail.responses.responses[0].error;
+    var response2=e.detail.responses.responses[0].session;
+     if(response!=undefined)
+     {
+     
+   this.dispatchEvent(new CustomEvent("associated-eventdef", { detail: { 'message': response,'eventname':this.eventname}}));
+     }
+    if(response1!=undefined)
+     {
+      console.log(response1);
+      this.dispatchEvent(new CustomEvent("associateeventdef-error", { detail: { 'error': response1}}));
+     }
+if(response2!=undefined)
+     {
+     
+   this.dispatchEvent(new CustomEvent("session-expired", { detail: { 'session': response2}}));
+     }
+
+
+
   }
 
-  associateEventDef(subscriber, ename, usedefaults, priority, action, edetails) {
+  associateEventDef(subscriber, ename, usedefaults,priority, action, recipients,message) {
       this.$.client._dataChanged();
-      this._postEvent = "AssociateEventDef";
+      this.eventname=ename;
+      this._postEvent = "associatetemplate.php";
       var postData = {};
+      postData.Subscriber = subscriber;
       postData.eventName = ename;
-      postData.eventDetails = edetails;
+      postData.recipients = recipients;
+      postData.message = message;
+ postData.deliveryType = "sms";
       if (priority == undefined) {
           priority = "1";
       }
@@ -66,11 +96,9 @@ class TeleHealthcareFlowAssociateEventDef extends PolymerElement {
       postData.actionName = action;
       postData.useDefaults = parseInt(usedefaults);
       postData.priority = parseInt(priority);
-
-      var postTo = {};
-      postTo['Subscriber'] = subscriber;
-
-      this.$.client.postSmart(postTo, postData);
+      console.log(subscriber+"--"+ename+"--"+usedefaults+"--"+priority+"--"+action+"--"+"--"+recipients+"--"+message);
+      
+      this.$.client.postSmart(postData);
   }
 }
 

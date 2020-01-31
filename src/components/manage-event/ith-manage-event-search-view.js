@@ -134,7 +134,18 @@ class IthManageEventSearchView extends (GestureEventListeners(PolymerElement)) {
          .close-search-container {
             margin-top: 10px;
          }
+         .btnstyle {
+         padding:200px;
+         }
         }
+
+@media (min-width: 767px) {
+         
+          paper-button {
+            padding:30px; 
+          }
+
+}
       </style>
       <div class="layout horizontal">
          <div class="empty-div"></div>
@@ -147,7 +158,7 @@ class IthManageEventSearchView extends (GestureEventListeners(PolymerElement)) {
                 <paper-icon-button on-tap="_onSearchIconTap" icon="icons:search" class="search-icon" hidden="[[_searchInProgress]]"></paper-icon-button>
             </iron-input>
             <div class="layout horizontal center-justified advance-search-container">
-               <div on-tap="_openAdvanceSearch" class="search-title">Advanced search</div>
+              <!-- <div on-tap="_openAdvanceSearch" class="search-title">Advanced search</div>-->
             </div> 
             <div class="layout horizontal center center-justified close-search-container" on-tap="_closeAdvanceSearch">
                 <paper-icon-button icon="icons:close" class="close-icon"></paper-icon-button>
@@ -155,7 +166,7 @@ class IthManageEventSearchView extends (GestureEventListeners(PolymerElement)) {
             </div>
         </div> 
         <div class="end layout vertical paper-button-container">
-           <paper-button class="filledBlue add-tmp" on-tap="_showCreateTemplateView">create new template</paper-button>
+           <paper-button class="filledBlue add-tmp btnstyle" on-tap="_showCreateTemplateView">create new template</paper-button>
            <paper-icon-button icon="icons:close" class$="[[_screenSize]] close-icon search-remove-icon" on-tap="_reset" hidden="[[_hideCloseIcon(mode,searchResult)]]"></paper-icon-button>
         </div>
       </div>

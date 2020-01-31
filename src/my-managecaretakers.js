@@ -15,15 +15,21 @@ import './shared-styles/input-styles.js';
 import './shared-styles/paper-button-styles.js';
 import './api/telehealthcareflow-getsubscriberdetails.js';
 import './search/search-listview.js';
+import './search/caretaker-listview.js';
+import './search/searchcaretaker-view.js';
 import './api/telehealthcareflow-searcheventtemplates.js';
-import './api/telehealthcareflow-assigncaretaker.js';
+import './api/telehealthcareflow-caretakersearchassign.js';
+import './api/telehealthcareflow-searchcaretaker.js';
 import './smart/smart-search.js';
 import './dialogs/caretaker-assign.js';
+import './dialogs/edit-caretaker.js';
+import '@polymer/paper-toast/paper-toast.js';
 
 class MyManageCaretakers extends PolymerElement {
   static get template() {
     return html`
       <style include="shared-styles input-styles paper-button-styles">
+   
         :host {
           display: block;
           position: relative;
@@ -68,27 +74,37 @@ class MyManageCaretakers extends PolymerElement {
          :host {
            margin: 8px;
          }
+         paper-toast {
+        width: 300px;
+        margin-left: calc(50vw - 150px);
+        margin-bottom: calc(50vw - 150px);
+        background:#e5ebef;
+        color:#2f3042;
+      }
       </style>
 
       <div class="content-title">
         <h2>Add/Edit Care Givers</h2>
       </div>
-      <search-view search-query="{{searchString}}" mode="{{_mode}}" title="Care giver" on-open-createnew="_openCreateNew" on-search-changed="_triggerSearch" enable-close="true"
-        active="[[searchView]]" on-close-listview="_hideListView"></search-view> 
+      <searchcaretaker-view search-query="{{searchString}}" mode="{{_mode}}" title="Care giver" on-open-createnew="_openCreateNew" on-search-changed="_triggerSearch" enable-close="true"
+        active="[[searchView]]" on-close-listview="_hideListView" ></searchcaretaker-view> 
       <search-listview class="search-result" columns="[[searchColumns]]" hidden="[[!searchView]]"
         search-result="{{searchResult}}" mode="{{_mode}}" actions="[[actions]]" on-action-assign="_assignCaretaker"></search-listview>
       <div class="title-container" hidden="[[searchView]]">
           <div class="flex-1 title">&nbsp;</div>
           <div class="card-content">
             <div class="content-single">
-              <search-listview class="caregiver-list" columns="[[columns]]"
-                search-result="{{subscriber.caretakers}}" mode="{{_mode}}"></search-listview>
+             <caretaker-listview class="caregiver-list" columns="[[columns]]"
+                search-result="{{subscriber.caretakers}}" mode="{{_mode}}"  on-action-edit="_editassignCaretaker"></caretaker-listview>
             </div>
           </div>
+        <paper-toast id="toast"></paper-toast>
       </div>
-      <caretaker-assign id="newcaretaker" subscriber="[[subscriber.email]]" on-assigned-caretaker="reloadData"></caretaker-assign>
-      <telehealthcareflow-getsubscriberdetails id="getdetails" on-subscriber-details="_setupSubscriber"></telehealthcareflow-getsubscriberdetails>
-      <telehealthcareflow-assigncaretaker id="myassign" on-assigned-caretaker="reloadData"></telehealthcareflow-assigncaretaker>
+      <caretaker-assign id="newcaretaker" subscriber="[[subscriber.email]]" on-assigned-caretaker="reloadData" on-search-changed1="reloadData1"></caretaker-assign>
+         <edit-caretaker id="editcaretaker" subscriber="[[subscriber.email]]" ctaker="[[ctaker]]"on-editassigned-caretaker="reloadData" on-search-changed1="reloadData1"></edit-caretaker>
+      <telehealthcareflow-getsubscriberdetails id="getdetails" on-subscriber-details="_setupSubscriber" on-session-expired="_session"></telehealthcareflow-getsubscriberdetails>
+<telehealthcareflow-searchcaretaker id="searchcaretaker" on-caretaker-result="_setupResult" on-session-expired="_session"></telehealthcareflow-searchcaretaker>
+      <telehealthcareflow-caretakersearchassign id="myassign" on-assigned-caretaker="_assigned" on-assigncaretaker-error="_error" on-session-expired="_session"></telehealthcareflow-caretakersearchassign>
       <smart-search id="caretakersearch" flow="TeleHealthcareFlow" group="CareTaker" query="[[searchQuery]]" search-result="{{searchResult}}"></smart-search>
     `;
   }
@@ -107,7 +123,16 @@ class MyManageCaretakers extends PolymerElement {
           type: Array,
           notify: true
       },
-      searchColumns: {
+       takerphone: {
+          type: String
+      },
+      ctaker: {
+          type: String
+      },
+      ctakername: {
+          type: String
+      },
+     searchColumns: {
           type: Array,
           value: [
               { flex: "flex-1", label: "email" },
@@ -115,10 +140,26 @@ class MyManageCaretakers extends PolymerElement {
               { flex: "flex-1", label: "phone" },
           ]
       },
+        _mode: {
+        type: String,
+        reflectToAttribute: true
+      },
       actions: {
           type: Array,
           value: [
               { id: 'assign', label: '+ ASSIGN'}
+          ]
+      },
+      actions1: {
+          type: Array,
+          value: [
+              { id: 'assigned', label: '+ ASSIGNED'}
+          ]
+      },
+  remove: {
+          type: Array,
+          value: [
+              { id: 'remove', label: '+ Edit/Remove'}
           ]
       },
       columns: {
@@ -152,6 +193,14 @@ class MyManageCaretakers extends PolymerElement {
       if (event.detail.data != undefined) {
           this.subscriber = event.detail.data;
           this.currentIndex = this.subscriber.caretakers.length + 1;
+         // console.log(this.subscriber.caretakers+"nnn");
+     // this.takers=this.subscriber.caretakers[0];
+     // for(i=0;i<this.currentIndex-1;i++)
+     //   {
+     //    this.takerphone=this.subscriber.caretakers[].phone;
+      //  } 
+     // console.log(this.currentIndex+"ddnnn");
+         
       }
       this._hideListView();
   }
@@ -161,12 +210,19 @@ class MyManageCaretakers extends PolymerElement {
   }
 
   _triggerSearch() {
-      this.searchQuery = {};
-      this.searchQuery.quickSearch = this.searchString;
-      this.$.caretakersearch.search();
+      
+      this.$.searchcaretaker.search(this.searchString,this.subscriber.email);
+     // this.searchQuery = {};
+     // this.searchQuery.quickSearch = this.searchString;
+     // this.$.caretakersearch.search();
       this.searchView = true;
-  }
+      this.searchResult = null;   
+      //this.subscriber=null;
+     // reloadData1();
 
+         
+  }
+   
   _assignCaretaker(event) {
       console.log(event.detail);
       var email = event.detail.data.email;
@@ -176,20 +232,79 @@ class MyManageCaretakers extends PolymerElement {
       var type = "caretaker";
 
       this.$.myassign.assignCaretaker(this.subscriber.email, email, name, phone, type, priority);
+this.searchView = false;
+  this.reloadData1();
+  }
+  _editassignCaretaker(event) {
+     // this.$.editcaretaker.open();
+     // this.subscriber=null;
+     // this.loadData(this.email);
+      this.dispatchEvent(new CustomEvent("change-page", { detail: { activepage: this.$.editcaretaker.open()}}));
+       console.log(event.detail.data.email+"mailjj");
+      this.ctaker=event.detail.data.email;
+      this.ctakername=event.detail.data.name;
+      this.$.editcaretaker.loadData(this.subscriber.email,this.ctaker,this.ctakername,event.detail.data.acaretakerId,event.detail.data.type,event.detail.data.phone,event.detail.data.priority);
+  }
+_setupResult(event) {
+    // this.searchView = true;
+     this.searchResult = event.detail.caretakers;   
+     console.log(this.actions.id);
+
   }
 
   loadData(email) {
+    this.subscriber=email;
+    this.searchString=null;
     this.email = email;
     this.$.getdetails.getDetails(email);
   }
-
+ reloadData1() {
+        this.searchString=null;
+       this.subscriber=this.email;
+       this.loadData(this.email);
+  }
   reloadData() {
-      this.loadData(this.email);
+     
+       this.subscriber=this.email;
+       this.loadData(this.email);
   }
 
   _openCreateNew() {
       this.$.newcaretaker.open();
   }
+
+_assigned()
+{
+this.searchView = false;
+ this.reloadData1();
+}
+
+_session(event)
+{
+ var session = event.detail.session;
+  
+    if (session != undefined) 
+        {
+        if (session.startsWith("Session Expired"))
+          {
+
+
+             var toast = this.$.toast;
+             
+ 		 toast.show({
+  			  horizontalAlign: 'left',
+  			  verticalAlign: 'bottom',
+  			  duration: 10000,
+  			  text: "Session Expired. Please login again"
+ 			 });
+
+                 return false;
+  	  }
+
+        }
+}
+
+
 }
 
 window.customElements.define('my-managecaretakers', MyManageCaretakers);

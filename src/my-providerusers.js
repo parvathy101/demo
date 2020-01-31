@@ -13,7 +13,9 @@ import './shared-styles.js';
 import './search/search-view.js';
 import './search/search-listview.js';
 import './dialogs/user-add.js';
+import './dialogs/user-edit.js';
 import './api/telehealthcareflow-searchtecusers.js';
+import '@polymer/paper-toast/paper-toast.js';
 
 class MyProviderUsers extends PolymerElement {
   static get template() {
@@ -58,17 +60,30 @@ class MyProviderUsers extends PolymerElement {
          :host {
            margin: 8px;
          }
+         paper-toast {
+        width: 300px;
+        margin-left: calc(50vw - 150px);
+        margin-bottom: calc(50vw - 150px);
+        background:#e5ebef;
+        color:#2f3042;
+      }
         }
       </style>
-      <search-view search-query="{{searchQuery}}" mode="{{_mode}}" title="User" on-open-createnew="_openCreateNew" on-search-changed="_triggerSearch"></search-view> 
+      
+      <search-view search-query="{{searchQuery}}" mode="{{_mode}}" title="User" on-open-createnew="_openCreateNew" on-search-changed="_triggerSearch1"></search-view> 
       <search-listview class="search-result" columns="[[columns]]"
-        search-result="{{searchResult}}" mode="{{_mode}}"></search-listview>
-      <telehealthcareflow-searchtecusers id="searchusers" on-tec-users="_setupResult"></telehealthcareflow-searchtecusers>
-      <user-add id="adduser" on-user-created="_triggerSearch"></user-add>
+        search-result="{{searchResult}}" mode="{{_mode}}"  on-action-edit="_showDetails"  title="Edit"></search-listview>
+      
+<paper-toast id="toast"></paper-toast>
+      
+      <telehealthcareflow-searchtecusers id="searchusers" on-tec-users="_setupResult" on-session-expired="_session"></telehealthcareflow-searchtecusers>
+      <user-add id="adduser" on-user-created="_triggerSearch2" on-search-changed1="_triggerSearch2"></user-add>
+      <user-edit id="edituser" on-user-edited="_loadData" on-search-changed2="_triggerSearch2"></user-edit>
     `;
   }
 
   static get properties() {
+
     return {
       columns: {
           type: Array,
@@ -108,20 +123,69 @@ class MyProviderUsers extends PolymerElement {
 
   loadData() {
       this._triggerSearch();
+
+  }
+_triggerSearch1(event) {
+       this.searchResult =null;
+      this.$.searchusers.search(this.searchQuery);
+  }
+_triggerSearch2() {
+        this.searchResult =null;
+     this.$.searchusers.search(this.searchQuery);
+       //loadData();
   }
 
   _triggerSearch() {
+
       this.$.searchusers.search(this.searchQuery);
+
   }
 
   _setupResult(event) {
-      console.log(event.detail);
-      this.searchResult = event.detail.users.users;
+      
+      //this.searchResult = event.detail.users.users; //smart
+    this.searchResult = event.detail.users;
+
+     
   }
 
   _openCreateNew() {
       this.$.adduser.open();
   }
+_openEdit() {
+     
+
+  }
+_showDetails(event) {
+      var user = event.detail.data;
+      this.dispatchEvent(new CustomEvent("change-page", { detail: { activepage: this.$.edituser.open()}}));
+      this.$.edituser.loadData(event.detail.data.email,event.detail.data.name,event.detail.data.phone,event.detail.data.role);
+  }
+
+_session(event)
+{
+ var session = event.detail.session;
+  
+    if (session != undefined) 
+        {
+        if (session.startsWith("Session Expired"))
+          {
+
+
+             var toast = this.$.toast;
+             
+ 		 toast.show({
+  			  horizontalAlign: 'left',
+  			  verticalAlign: 'bottom',
+  			  duration: 10000,
+  			  text: "Session Expired. Please login again"
+ 			 });
+
+                 return false;
+  	  }
+
+        }
+}
 }
 
 window.customElements.define('my-providerusers', MyProviderUsers);

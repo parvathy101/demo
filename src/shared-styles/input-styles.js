@@ -15,7 +15,8 @@ const $_documentContainer = document.createElement('template');
 $_documentContainer.innerHTML = `
 <dom-module id="input-styles">
   <template>    
-  <style>     
+  <style>   
+*{ -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; margin:0;padding:0;}  
   input{
     width: 100%;
     height: 44px;

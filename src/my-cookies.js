@@ -48,6 +48,7 @@ class MyCookies extends PolymerElement {
   constructor() {
       super();
       this.sessionId = this.getCookie();
+      this.userId = this.getUserId();
   }
 
   _setCookie() {

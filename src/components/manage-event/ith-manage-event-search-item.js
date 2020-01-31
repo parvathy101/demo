@@ -75,16 +75,16 @@ class ithManageEventSearchItem extends PolymerElement {
         }
       </style>
       <div class="layout horizontal row">
-        <div class="cell-content cell-margin title-content flex-1 ">[[template.name]]</div>
-        <div class="cell-margin  description-content  flex-2">[[template.description]]</div>
-        <div class="cell-margin cell-content flex-1 sensor-container">
+        <div class="cell-content cell-margin title-content flex-2 ">[[template.name]]</div>
+        <div class="cell-margin  description-content  flex-1">[[template.description]]</div>
+        <!--<div class="cell-margin cell-content flex-1 sensor-container">
 
           <template is="dom-repeat" items="[[template.sensors]]" as="sensor">
               <iron-icon id="[[_getIdForToolTip(sensor.name)]]" icon="[[_getSensorIcon(sensor.id)]]" class="sensor-icon"></iron-icon>
               <paper-tooltip  for="[[_getIdForToolTip(sensor.name)]]" position="bottom">[[sensor.name]]</paper-tooltip>
           </template>
 
-        </div>
+        </div>-->
         
         <template is="dom-if" if="[[_isUsed(template.id, used)]]">
           <div class="cell-content  center-justified flex-1">

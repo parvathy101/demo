@@ -10,12 +10,12 @@
 
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import '../shared-styles/shared-styles.js';
-import '../smart/smart-client.js';
+import '../smart/php-client.js';
 
 class TeleHealthcareFlowAssignCaretaker extends PolymerElement {
   static get template() {
     return html`
-      <smart-client id="client" flow="TeleHealthcareFlow" flow-event="{{_postEvent}}" on-smart-network-error="_handleError" on-smart-error="_handleError" on-smart-response="_handleResponse" ></smart-client>
+   <php-client id="client" flow="smart" flow-event="{{_postEvent}}" on-smart-network-error="_handleError" on-smart-error="_handleError" on-smart-response="_handleResponse" ></php-client>
     `;
   }
 
@@ -43,24 +43,44 @@ class TeleHealthcareFlowAssignCaretaker extends PolymerElement {
   }
 
   _handleResponse(e) {
-    var response = e.detail.responses[0];
-    this.dispatchEvent(new CustomEvent("assigned-caretaker", { detail: { 'message': response }}));
+      console.log(e.detail.responses);
+     var response = e.detail.responses.responses[0].message;
+    var response1=e.detail.responses.responses[0].error;
+    var response2=e.detail.responses.responses[0].session;
+    if(response!=undefined)
+     {
+      console.log(response);
+   this.dispatchEvent(new CustomEvent("assigned-caretaker", { detail: { 'message': response }}));
+     }
+    if(response1!=undefined)
+     {
+
+      console.log(response1);
+       this.dispatchEvent(new CustomEvent("assigncaretaker-error", { detail: { 'error': response1}}));
+     }
+     if(response2!=undefined)
+     {
+     
+   this.dispatchEvent(new CustomEvent("session-expired", { detail: { 'session': response2}}));
+     }
+
+
+
+
   }
 
   assignCaretaker(subscriber, email, name, phone, type, priority) {
-      this.$.client._dataChanged();
-      this._postEvent = "AssignCaretaker";
+     this.$.client._dataChanged();
+      this._postEvent = "registercaregiver.php";
       var postData = {};
+      postData.subscriber = subscriber;
       postData.email = email;
       postData.name = name;
       postData.phone = phone;
       postData.type = type;
-      postData.priority = parseInt(priority);
+      postData.priority = priority;
 
-      var postTo = {};
-      postTo['Subscriber'] = subscriber;
-
-      this.$.client.postSmart(postTo, postData);
+      this.$.client.postSmart(postData);
   }
 }
 

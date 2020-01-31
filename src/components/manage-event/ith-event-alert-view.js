@@ -6,6 +6,26 @@ import '../../shared-styles/shared-styles';
 import '../../shared-styles/input-styles';
 import '../../shared-styles/add-event-param-styles';
 import '../../elements/ith-multi-select/ith-multi-select.js';
+import '../../api/telehealthcareflow-getsubscriberdetails.js';
+import './ith-edit-event-add-edit-dialog.js';
+import '@polymer/paper-toast/paper-toast.js';
+
+import '@polymer/polymer/lib/elements/dom-if';
+import '@polymer/polymer/lib/elements/dom-repeat';
+import '@polymer/paper-menu-button/paper-menu-button';
+import '@polymer/paper-input/paper-input';
+import '@polymer/paper-checkbox/paper-checkbox';
+import '@polymer/iron-flex-layout/iron-flex-layout';
+import '@polymer/iron-flex-layout/iron-flex-layout-classes';
+import '@polymer/iron-input/iron-input';
+import '@polymer/iron-icon/iron-icon';
+import '@polymer/iron-icons/iron-icons';
+import '@polymer/paper-listbox/paper-listbox';
+import '../../shared-styles/paper-menu-button-styles';
+import {mixinBehaviors} from '@polymer/polymer/lib/legacy/class.js';
+import {IronFormElementBehavior} from '@polymer/iron-form-element-behavior/iron-form-element-behavior';
+
+
 
 class IthEventAlertView extends PolymerElement {
   static get template() {
@@ -26,11 +46,72 @@ class IthEventAlertView extends PolymerElement {
       #alertType {
         margin-right: 24px;
       }
+
+--paper-listbox-width: 458px;
+        height: 50px;
+        --paper-menu-button:{
+           width: 100%;
+        };
+        --paper-checkbox-label: {
+          display: none;
+        }
+        --paper-checkbox-checked-color: var(--light-theme-background-color);
+        --paper-checkbox-checkmark-color: var(--app-accent-color);
+        --paper-checkbox-checked-ink-color: var(--app-accent-color);
+      }
+      paper-checkbox #checkboxContainer #checkbox.checked {
+        background-color: #ff0000);
+        border-color:  #ff0000);
+      }
+      paper-menu-button paper-listbox paper-checkbox {
+          padding: 0px;
+          border-bottom: none;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+        paper-menu-button paper-listbox{
+          box-shadow: 0px 3px 0px rgba(189, 203, 213, 1) !important;
+        }
+        .checkbox-title {
+          font-size: 14px;
+          font-family: 'Roboto-Regular';
+          color: var(--app-accent-color);
+          padding: 5px 8px 5px 10px;
+          text-align: center;
+          border-bottom:  1px solid var(--border-color);
+          outline: none;
+        }
+        .list-container {
+          outline: none;
+          padding: 0px 8px 0px 20px;
+          border-bottom:  1px solid var(--border-color);
+          cursor: pointer;
+        }
+        .list-container:hover{
+          background-color:var(--hover-color);
+        }
+
+ paper-toast {
+        width: 300px;
+        margin-left: calc(50vw - 150px);
+        margin-bottom: calc(50vw - 150px);
+        background:#e5ebef;
+        color:#2f3042;
+      }
+
+
+
+
+
+
+
+
       </style>
       <div class="layout horizontal add-template-header center">
       <div class="add-template-header-title flex-1">Event alert</div>
         <div class="help-icon-container">
-          <paper-icon-button icon="icons:help-outline" class="help-icon"></paper-icon-button>
+         <!-- <paper-icon-button icon="icons:help-outline" class="help-icon"></paper-icon-button>-->
           <div class="help-info-container">
             <div class="help-title">Help title</div>
             <div class="help-info">
@@ -56,13 +137,18 @@ class IthEventAlertView extends PolymerElement {
         <div class="layout vertical trigger-view-row-container flex-8">
           <div class="alert-text">Will the alert trigger when the event trigger takes place or if it doesn't?</div>
            <paper-radio-group selected="{{_selected}}">
-              <paper-radio-button name="take_palce">When it takes place</paper-radio-button>
-              <paper-radio-button name="tale_not_palce">if it does not take place</paper-radio-button>
-           </paper-radio-group>
+              <paper-radio-button name="take_palce" id="one">When it takes place</paper-radio-button>
+              <paper-radio-button name="tale_not_palce" id="two">if it does not take place</paper-radio-button>
+           </paper-radio-group> 
         </div>
       </div>
 
       <div class="layout horizontal">
+
+
+
+
+
         <div class="layout horizontal trigger-view-row-container flex-8">
           <ith-dropdown-menu 
             value="{{_alertType}}" 
@@ -75,13 +161,18 @@ class IthEventAlertView extends PolymerElement {
           </ith-dropdown-menu>
           <div class="layout vertical flex-1">
             <div class="flex-1 recipient-container" hidden="[[!_eq(_alertTypeDropDowm, 'Notification')]]">
-              <div class="dropdown-title">Recipents</div>
-              <ith-recipients-settings
-                items="[[recipents]]" 
-                name="recipients"
-                id="recipients"
-                input-value="[[inputValue]]">
-              </ith-recipients-settings>
+              <div class="dropdown-title">Recipients</div>
+     
+              <div class="layout horizontal center">
+     
+                   <paper-radio-group id="generate">
+                  <template is="dom-repeat" items="[[subscriber.caretakers]]">
+              <paper-radio-button id="[[item.name]]" name="[[item.name]]"   style="padding-right:20px;" on-click="_change" value="[[item.name]]">[[item.name]]</paper-radio-button>
+                 </template>
+            </paper-radio-group>
+              </div>
+         
+
             </div>
             <ith-dropdown-menu 
                 class="drop-down flex-1" 
@@ -111,7 +202,11 @@ class IthEventAlertView extends PolymerElement {
           <textarea rows="5" id="message" autocomplete="off" placeholder="Lorem Ipsum is simply dummy text of the printing and typesetting industry."></textarea>
         </div>
       </div>
+<paper-toast id="toast"></paper-toast>
      </div>
+
+<ith-edit-event-add-edit-dialog id="addeditevent" on-edited-event="EditedEvent" email="[[email]]"></ith-edit-event-add-edit-dialog>
+<telehealthcareflow-getsubscriberdetails id="searchdev" on-subscriber-details="_saveData" on-session-expired="_session"></telehealthcareflow-getsubscriberdetails>
     `;
   }
 
@@ -143,6 +238,17 @@ class IthEventAlertView extends PolymerElement {
         }
       },
 
+subscriber: {
+            type: Object
+        },
+name: String,
+output: String,
+
+         email: {
+            type: String,
+observer: '_changePage'
+            
+        },
       recipents: {
         type: Array,
         value: function(){
@@ -150,6 +256,15 @@ class IthEventAlertView extends PolymerElement {
           {'id': 'contact3', 'name': 'nirmal baladaniya'}]
         }
       },
+
+
+
+
+currentPage: {
+            type: String,
+            notify: true,
+            observer: '_changePage'
+        },
 
      _alertType: {
         type: String,
@@ -168,6 +283,8 @@ class IthEventAlertView extends PolymerElement {
 
   connectedCallback(){
     super.connectedCallback()
+this.$.searchdev.getDetails(this.email);
+//alert(this.subscriber.devices);
     var elPaperRadioButton = this.shadowRoot.querySelectorAll('paper-radio-button');
     var number = [];
 
@@ -184,6 +301,7 @@ class IthEventAlertView extends PolymerElement {
   _onAlertTypeChanged(e){
     if(this._alertType === 'Notification'){
       this.set('_alertTypeDropDowm', 'Notification');
+
       return;
     }
 
@@ -199,13 +317,58 @@ class IthEventAlertView extends PolymerElement {
     return str1 === str2;
   }
 
+
+_saveAlert()
+{
+var radioval;
+if (this.$.one.checked) {
+   radioval = "1";
+
+}
+else if (this.$.two.checked) {
+  radioval = "0";
+
+}
+var alerttype="Notification";
+var receipientval=this.output;
+//this.$.receipients._isSelectedItem("1", "sms");
+
+
+}
+
+
+ _isSelectedItem(id, key){
+
+    if(!this._recipients){
+      return;
+    }
+
+     var recipientInfo =  this._recipients[id];
+
+
+     if(!recipientInfo){
+       return;
+     }
+
+     if(recipientInfo.indexOf(key) === -1){
+       return false;
+     }
+
+     return true;
+  }
+
+
+
   getActionDetails() {
       var action = {};
 
       action.deliveryType = this.$.alertType.value;
+//alert(this.$.alertType.value);
       if (this.$.alertType.value == 'Notification') {
-          action.deliveryType = "email";
-          action.recipients = this.$.recipients.value;
+          action.deliveryType = "sms";
+          //action.recipients = this.$.recipients.value;
+action.recipients = this.output;
+//alert(this.output);
           action.message = this.$.message.value;
       } else if (this.$.alertType.value == 'No Action') {
           action.actionName = 'noaction';
@@ -213,6 +376,117 @@ class IthEventAlertView extends PolymerElement {
 
       return action;
   }
+
+_changePage()
+{
+
+   this.subscriber=null;
+this.$.searchdev.getDetails(this.email);
+
+}
+
+
+_onCheckedChanged(e){
+    var isChecked = e.detail.value;
+if(e.target.checked)
+{
+    this.output = e.target.name;
+
+}
+    var setting = e.target.id;
+    var num;
+
+    var index = this.value.findIndex(function(item){
+      var key = Object.keys(item)[0];
+      return contactId === key;
+    });
+    
+    if(index === -1 && isChecked){
+      this._addNewRecipents(setting, contactId);
+      return;
+    }
+    
+    if(isChecked){
+      this._addNewSetting(index, contactId, setting);
+      return;
+    }
+    
+    this._removeSetting(index, contactId, setting);
+  }
+
+
+ _saveData(event)
+{
+// alert(this.email+"sefws")
+  /*   var mapped = {};
+      var evts = []; 
+
+   for (var i = 0; i < ev.detail.data.devices.length; i++)
+   {
+    var evt = ev.detail.data.devices[i];
+          mapped[evt.tag] = evt;
+          evts.push(evt.tag);
+    }
+    this.sensors=evts;*/
+   if (event.detail.data != undefined) {
+          this.subscriber = event.detail.data;
+
+      }  
+    
+    
+
+}
+
+_change(e)
+{
+
+   if(e.target.checked)
+     {
+       this.output=e.target.value;
+     }
+    else
+      {
+        this.output="";
+      } 
+}
+
+
+
+  load()
+{
+
+
+ this.subscriber=null;
+this.$.searchdev.getDetails(this.email);
+
+this.$.alertType.value="Notification";
+this.$.message.value="";
+}
+
+_session(event)
+{
+ var session = event.detail.session;
+  
+    if (session != undefined) 
+        {
+        if (session.startsWith("Session Expired"))
+          {
+
+
+             var toast = this.$.toast;
+             
+ 		 toast.show({
+  			  horizontalAlign: 'left',
+  			  verticalAlign: 'bottom',
+  			  duration: 10000,
+  			  text: "Session Expired. Please login again"
+ 			 });
+
+                 return false;
+  	  }
+
+        }
+}
 }
 
 window.customElements.define('ith-event-alert-view', IthEventAlertView);

@@ -15,6 +15,7 @@ const $_documentContainer = document.createElement('template');
 $_documentContainer.innerHTML = `<dom-module id="paper-dropdown-menu-styles">
   <template>    
   <style>
+*{ -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; margin:0;padding:0;}
      :host{
       --paper-input-container-underline: {
         display: none;

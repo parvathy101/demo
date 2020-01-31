@@ -79,7 +79,7 @@ class ithPatientEventTemplateListView extends  (PolymerElement) {
       <template is="dom-if" if="[[_eq(_mode,'LIST_VIEW')]]">
         <div class="event-template-container layout vertical">
           <template is="dom-repeat" items="[[eventTemplates]]">
-            <ith-patient-event-template template="[[item]]" event-template="[[item]]">
+            <ith-patient-event-template template="[[item]]" event-template="[[item]]" on-delete-templates="_delete" on-edit-templates="_edit">
             </ith-patient-event-template>
           </template>
          </div>
@@ -132,6 +132,19 @@ class ithPatientEventTemplateListView extends  (PolymerElement) {
   _getEventTemplate(eventTemplateId) {
     return this._eventTemplates[eventTemplateId];
   }
+
+   _delete(e)
+    {
+     console.log(e.detail.eventname+"aaaaaa");
+     this.dispatchEvent(new CustomEvent('delete-eventtemplates', { detail: { 'eventname': e.detail.eventname }}));
+    }
+
+   _edit(e)
+   {
+    // this.dispatchEvent(new CustomEvent('edit-eventtemplates', { detail: { 'eventname': e.detail.eventname,'start':e.detail.start,'end':e.detail.end,'tag':e.detail.tag,'sequence':e.detail.sequence }}));
+
+    this.dispatchEvent(new CustomEvent('edit-eventtemplates', { detail: { 'title': e.detail.title, 'eventname': e.detail.eventname, 'description': e.detail.description, 'type': e.detail.type,'eventDetails': e.detail.eventDetails,'start':e.detail.start,'end':e.detail.end }}));
+   }
 }
 
 window.customElements.define('ith-patient-event-template-list-view', ithPatientEventTemplateListView);

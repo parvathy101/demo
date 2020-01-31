@@ -33,11 +33,14 @@ class SearchListView extends PolymerElement {
           @apply --layout-vertical;
         }
         .cell-content {
-          padding: 0px 20px 0px 20px;
-          border-right: 2px solid var(--light-theme-background-color);
+          //padding: 0px 20px 0px 20px;
+text-align:center;
+          //border-right: 2px solid var(--light-theme-background-color);
+
         }
         .header-description {
           padding: 0px 52px 0px 20px;
+
           border-right: 2px solid var(--light-theme-background-color);
         }
         .header-cell-margin {
@@ -127,15 +130,15 @@ class SearchListView extends PolymerElement {
       </div>
      </template>
 
-      <div class="list">
+      <div class="list" style="table-layout: fixed; width: 100%; table-layout: fixed; text-align:center;">
         <div class="layout horizontal header-list-container">
           <template is="dom-repeat" items="[[columns]]">
-              <div class="header-cell-margin cell-content layout vertical center-justified flex-1">[[item.label]]</div>
+              <div class="header-cell-margin cell-content layout vertical center-justified flex-1" style="text-align:center">[[item.label]]</div>
           </template>
-          <div class=" layout vertical cell-content center-justified flex-1 header-last-child"></div>
+          <div class=" layout vertical cell-content center-justified flex-1 header-last-child" style="text-align:center"></div>
         </div>
         <template is="dom-repeat" items="[[searchResult]]" observe="#">
-            <search-item template="[[item]]" class="event-row"
+            <search-item template="[[item]]" class="event-row" style="text-align:center"
                   columns="[[columns]]"
                   actions="[[actions]]"
                   on-action-item="_doAction">

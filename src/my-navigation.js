@@ -15,6 +15,10 @@ import "@polymer/iron-icons/iron-icons";
 import "@polymer/iron-icon/iron-icon";
 import './shared-styles/shared-styles.js';
 import './icons/ithings-icons.js';
+import '@vaadin/vaadin-upload/vaadin-upload.js';
+import './api/telehealthcareflow-getsubscriberdetails.js';
+import '@polymer/iron-ajax/iron-ajax.js';
+import "./smart/smart-config.js";
 
 class MyNavigation extends PolymerElement {
   static get template() {
@@ -41,14 +45,16 @@ class MyNavigation extends PolymerElement {
         a {
             display: block;
             text-decoration: none;
-            padding: 15px 15px;
             line-height: 20px;
             font-size: 14px;
-            height: 50px;
             color: var(--app-text-color);
             text-transform: uppercase;
             box-sizing: border-box;
             outline: none;
+        }
+
+        .nav-list{
+          padding:15px;
         }
 
         iron-icon{
@@ -61,6 +67,7 @@ class MyNavigation extends PolymerElement {
         .backmenu {
             background-color: #E5EBEF;
             border-bottom: 1px solid var(--medium-blue-grey);
+            padding:15px;
         }
 
         .mainmenu {
@@ -89,13 +96,29 @@ class MyNavigation extends PolymerElement {
             height: 98px;
         }
 
+        @media (max-width:1199px){
+          iron-icon{
+            margin-right: 10px;
+            margin-left: 10px;
+          }
+        }
+        @media (max-width:800px){
+          iron-icon{
+            margin-right: 0;
+            margin-left: 0;
+          }
+          .nav-list a{
+            font-size:12px;
+          }
+        }
+
       </style>
 
       <template is="dom-if" if="[[showMenu]]">
           <iron-selector selected="[[currentPage]]" attr-for-selected="name" class="drawer-list" role="navigation">
             <template is="dom-if" if="[[showPrevious]]">
                 <div class="backmenu">
-                    <a name="[[prevPage]]" href="[[rootPath]][[prevPage]]">
+                    <a name="[[prevPage]]" href="#/[[prevPage]]">
                         <iron-icon icon="ithings-icons:arrow-back"></iron-icon>
                         [[previousLabel]]
                     </a>
@@ -103,32 +126,78 @@ class MyNavigation extends PolymerElement {
             </template>
             <div class="mainmenu">
                 <template is="dom-if" if="[[showProfile]]">
-                    <a href="/" class="layout horizontal center info">
-                        <img src="https://dummyimage.com/60x60/2f3042/2f3042">
+
+                  
+                  
+                     <div class = "flexchild" style="width:100%"> 
+                      <template is="dom-if" if="{{_lookuser(email)}}">
+
+
+                       <paper-button on-tap="{{_lookuser(email)}}">
+ <form action = "http://[[server]]/php/api/photoload.php?name=[[subscriber.name]]&mail=[[subscriber.email]]" method = "POST" enctype = "multipart/form-data">
+         
+         
+         
+			
+			<iron-ajax 
+                 auto id="ajax"
+                 url="http://[[server]]/php/api/getPhoto.php"
+                 body='{"subscriber":"[[subscriber.email]]"}'
+                 last-response="{{response}}"
+                  on-response="handleResponse"
+                 method="post"
+                  handle-as="json"
+                 content-type="application/json"
+              > </iron-ajax>
+                 
+                <template is="dom-repeat" items="[[response.records]]" as="item" id="itemlist" scroll-target="document" selected-item="{{selectedItem}}" selection-enabled grid>
+
+                
+
+                 </template>
+      
+                           <label for="fileField">
+
+  <img src="{{photourl}}" onerror="this.src='https://dummyimage.com/60x60/2f3042/2f3042'" style="width:80px; height:80px; margin-left:20px;" id="img">
+
+<input type="file" id="fileField" name="image" accept="image/*" style="display: none;" onchange="form.submit()">
+
+</form>
+                        
+ 
                         <div class="fullname flex">[[name]]</div>
-                    </a>
+                     </a>
+                   </paper-button>
+                    </template>
+                       </div><br/>
                 </template>
                 <template is="dom-repeat" items="[[currentNavigation]]">
-                    <a name="[[item.page]]" href="[[rootPath]][[item.page]][[_getQueryParms(item.parms)]]">
+                  <div class="nav-list">
+                    <a name="[[item.page]]" href="[[_getQueryParms(item.parms)]]#/[[item.page]]">
                         <iron-icon icon="ithings-icons:[[item.icon]]"></iron-icon>
                         [[item.label]]
                     </a>
+                  </div>
                 </template>
             </div>
             <div class="globalmenu">
                 <template is="dom-repeat" items="[[globals]]">
-                    <a name="[[item.page]]" href="[[rootPath]][[item.page]]">
+                  <div class="nav-list">
+                    <a name="[[item.page]]" href="#/[[item.page]]">
                         <iron-icon icon="ithings-icons:[[item.icon]]"></iron-icon>
                         [[item.label]]
                     </a>
+                  </div>
                 </template>
             </div>
           </iron-selector>
       </template>
+     <telehealthcareflow-getsubscriberdetails id="getdetails" on-subscriber-details="_setupSubscriber"></telehealthcareflow-getsubscriberdetails>
+<smart-config id="globals"></smart-config>
     `;
   }
 
-  static get properties() {
+    static get properties() {
       return {
         showProfile: {
             type: Boolean,
@@ -137,6 +206,13 @@ class MyNavigation extends PolymerElement {
         name: {
             type: String
         },
+        email: {
+            type: String
+        },
+photourl: {
+            type: String
+        },
+         
         prevPage: {
             type: String,
             value: "serviceusers"
@@ -153,6 +229,9 @@ class MyNavigation extends PolymerElement {
             type: String,
             reflectToAttribute: true
         },
+        server: {
+            type: String
+        },
         currentPage: {
             type: String,
             notify: true,
@@ -165,7 +244,7 @@ class MyNavigation extends PolymerElement {
         globals: {
             type: Array,
             value: [
-                { label: "MY ACCOUNT", page: "accountsetup", icon: "account" }, 
+                { label: "MY ACCOUNT", page: "accountpage", icon: "account" }, 
                 { label: "SUPPORT", page: "supportpage", icon: "support" }, 
                 { label: "CONTACT", page: "contactpage", icon: "contact" }
             ]
@@ -179,7 +258,7 @@ class MyNavigation extends PolymerElement {
                 ],
                 "tecassessor": [ 
                     { label: "SERVICE USERS", page: "serviceusers" }, 
-                    { label: "CARE HOMES", page: "carehomes" }
+                  //  { label: "CARE HOMES", page: "carehomes" }
                 ],
                 "techassistant": [
                     { label: "DEVICES", page: "devicespage" }
@@ -193,7 +272,10 @@ class MyNavigation extends PolymerElement {
                     { label: "GENERAL DETAILS", page: "subscribergeneral", icon: "edit-patient", parms: ["email", "name"] }, 
                     { label: "MANAGE EVENTS", page: "manageevents", icon: "manage-events", parms: ["email", "name"] }, 
                     { label: "MANAGE DEVICES", page: "managedevices", icon: "manage-devices", parms: ["email", "name"]}, 
-                    { label: "MANAGE CAREGIVERS", page: "managecaretakers", icon: "manage-categories", parms: ["email", "name"]}
+                    { label: "MANAGE CAREGIVERS", page: "managecaretakers", icon: "manage-categories", parms: ["email", "name"]},
+                    { label: "EVENT HISTORY", page: "eventhistory", icon: "manage-events", parms: ["email", "name"]},
+		    { label: "SENSOR EVENT HISTORY", page: "managesensors", icon: "manage-categories", parms: ["email", "name"]},
+                    
                 ],
                 "CARE HOME": [ 
                     { label: "GENERAL DETAILS", page: "carehomegeneral" }, 
@@ -223,8 +305,50 @@ class MyNavigation extends PolymerElement {
             observer: "_changeNavigation"
         }
       };
+      return {
+          session: {
+              type: String,
+              value: ""
+          },
+          currentWall: {
+              type: String,
+              value: "Visitor",
+              notify: true,
+              observer: "_handleCurrentWallChange"
+          },
+          search: {
+              type: Object,
+              value: { wall: "Visitor" }
+          },
+          images: {
+              type: Array,
+              notify: true,
+              value: [],
+              observer: '_handleSearchResult'
+          },
+          wallImages: {
+              type: Array,
+              notify: true,
+              value: []
+          },
+          dataContext: {
+              type: String,
+              value: ""
+          },
+         subscriber: {
+            type: Object
+        },
+        phone: {
+            type: String
+        },
+        response: {
+          type: String
+        },
+        selectedItem:{
+              type: Object
+          }
+        };
   }
-
   ready() {
       super.ready();
       this.pageNavigation = {};
@@ -233,23 +357,82 @@ class MyNavigation extends PolymerElement {
       this.pageNavigation['manageevents'] = this.secondlevel["SERVICE USER"];
       this.pageNavigation['managedevices'] = this.secondlevel["SERVICE USER"];
       this.pageNavigation['managecaretakers'] = this.secondlevel["SERVICE USER"];
+      this.pageNavigation['eventhistory'] = this.secondlevel["SERVICE USER"];
+      this.pageNavigation['managesensors'] = this.secondlevel["SERVICE USER"];
+
 
       this.pageNavigation['carehomegeneral'] = this.secondlevel["CARE HOME"];
       this.pageNavigation['managehomeevents'] = this.secondlevel["CARE HOME"];
       this.pageNavigation['managehomedevices'] = this.secondlevel["CARE HOME"];
 
-      this.previousPage['subscribergeneral'] = { page: "serviceusers?removequery=test", label: "Service Users" };
-      this.previousPage['manageevents'] = { page: "serviceusers?removequery=test", label: "Service Users" };
-      this.previousPage['managedevices'] = { page: "serviceusers?removequery=test", label: "Service Users" };
-      this.previousPage['managecaretakers'] = { page: "serviceusers?removequery=test", label: "Service Users" };
+      this.previousPage['subscribergeneral'] = { page: "serviceusers", label: "Service Users" };
+      this.previousPage['manageevents'] = { page: "serviceusers", label: "Service Users" };
+      this.previousPage['managedevices'] = { page: "serviceusers", label: "Service Users" };
+      this.previousPage['managecaretakers'] = { page: "serviceusers", label: "Service Users" };
+      this.previousPage['eventhistory'] = { page: "serviceusers", label: "Service Users" };
+      this.previousPage['managesensors'] = { page: "serviceusers", label: "Service Users" };
+      /*"   var upload = this.$.ImageURL;
+          if (upload != null) {
+              upload.addEventListener("upload-request", this._uploadRequest.bind(this));
+              upload.addEventListener("upload-response", this._uploaded.bind(this));
+          }
+          this.session = this.$.globals.sessionId;*/
 
+    // alert(this.email);
+     this.server=this.$.globals.server;
+     
+    
   }
+       setupData(ctx) {
+          this.dataContext = ctx;
+          this._handleCurrentWallChange();
+          this.session = this.$.globals.sessionId;
+      }
+
+ _handleSearchResult() {
+          var images = [];
+          for (var i = 0; i < this.images.length; i++) {
+            var one = {};
+            var cnt = 0;
+            one.documentId = this.images[i].documentId;
+            one.fileName = this.images[i].fileName;
+
+            images.push(one);
+          }
+
+          this.wallImages = images;
+      }
+
+      _handleCurrentWallChange() {
+          this.search = {};
+          this.search.wall = this.currentWall;
+          this.$.searchDocuments.search();
+      }
+
+      _uploaded(event) {
+          console.log("Uploaded file " + event);
+          var docid = event.detail.xhr.responseText
+          var one = {};
+          one.documentId = docid;
+
+          var images = this.wallImages;
+          images.push(one);
+          this.wallImages = images;
+      }
+
+      _uploadRequest(event) {
+          console.log('upload xhr after open: ', event.detail.xhr);
+
+          event.detail.formData.append('SessionId', this.$.globals.sessionId);
+          event.detail.formData.append('wall', this.currentWall);
+      }
 
   _changeNavigation(page) {
       if (this.currentPage == 'login') {
           this.showMenu = false;
       } else {
           this.showMenu = true;
+
       }
 
       this.currentNavigation = this.pageNavigation[this.currentPage];
@@ -263,11 +446,14 @@ class MyNavigation extends PolymerElement {
       }
 
       this.name = this.subRoute.__queryParams["name"];
+      this.email = this.subRoute.__queryParams["email"];
       if (this.name != undefined) {
           this.showProfile = true;
       } else {
           this.showProfile = false;
       }
+this._lookuser(this.email);
+ this.server=this.$.globals.server;
 
       var previous = this.previousPage[this.currentPage];
       if (previous != undefined) {
@@ -276,9 +462,11 @@ class MyNavigation extends PolymerElement {
           this.prevPage = previous.page;
       } else {
           this.showPrevious = false;
+          this.showProfile = false;
           this.previousLabel = "";
           this.prevPage = "";
       }
+      
   }
 
   _getQueryParms(parms) {
@@ -287,11 +475,59 @@ class MyNavigation extends PolymerElement {
           query = "?";
           for (var i = 0; i < parms.length; i++) {
               query += parms[i] + "=" + this.subRoute.__queryParams[parms[i]] + "&";
+
           }
+
       }
 
       return query;
   }
+   _lookuser(email)
+{
+    // alert(email);
+     this.server=this.$.globals.server;
+      this.$.getdetails.getDetails(this.email);
+      return true;
+
+}
+
+_setupSubscriber(event) {
+      if (event.detail.data != undefined) {
+          this.subscriber = event.detail.data;
+      }
+    // window.open("http://178.128.165.237/php/api/fileupload.php?phone="+this.subscriber.phone+"");
+    // window.open('http://178.128.165.237/php/api/fileupload1.php?phone='+this.subscriber.phone+'','1547458331664','width=450,height=100,toolbar=0,menubar=0,location=0,status=1,scrollbars=1,resizable=1,left=200,top=200 ');
+     //alert("http://178.128.165.237/php/api/fileupload.php?phone="+this.subscriber.phone+"");
+  }
+handleResponse(e)
+    {
+
+    var request = e.detail;
+  var response = request.response;
+var totval= JSON.stringify(response);
+var val1 = totval.toString();
+
+var countdata = val1.substr(val1.lastIndexOf(':')+2, val1.length - 1);
+
+//var countop = countdata.substr(countdata.lastIndexOf('\"')+1, countdata.length+1);
+
+var urlimg = countdata.substring(0, countdata.lastIndexOf('\"')-4);
+ if(urlimg!='')
+ {
+this.photourl = "http://"+this.server+"/php/photos/"+urlimg+".jpg";
+ }
+ else
+  {
+   this.photourl=null;
+  }
+//alert(urlimg+"sss");
+//this.photourl = "http://178.128.165.237/php/photos/"+urlimg+".jpg";
+//this.countPage = countop;
+//this.$.img.src=url;
+
+ 
+    }
+   
 }
 
 window.customElements.define('my-navigation', MyNavigation);
